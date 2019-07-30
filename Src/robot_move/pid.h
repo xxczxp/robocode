@@ -20,7 +20,8 @@
 enum PID_MODE
 {
     PID_POSITION = 0,
-    PID_DELTA
+    PID_DELTA,
+	  PID_LOCATION
 };
 
 typedef struct
