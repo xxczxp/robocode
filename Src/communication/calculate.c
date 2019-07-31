@@ -24,7 +24,7 @@ void Append_CRC8_Check_Sum(unsigned char *pchMessage, unsigned int dwLength);
 extern uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
 
 //计算式输入数据
-communicate_class_output_data_t communicate_input_data;
+communicate_class_input_data_t communicate_input_data;
 //计算式输出结果
 communicate_class_output_data_t communicate_output_data;
 
