@@ -33,9 +33,5 @@ int x;
 int y;
 int w;
 }location_t;
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 
 #endif
