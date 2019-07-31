@@ -224,7 +224,6 @@ Mat* MatSub(Mat* src1, Mat* src2, Mat* dst)
 }
 
 /* dst = src1 * src2 */
-// ¾ØÕó³Ë·¨
 Mat* MatMul(Mat* src1, Mat* src2, Mat* dst)
 {
 	int row, col;
