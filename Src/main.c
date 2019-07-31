@@ -31,6 +31,9 @@
 #include "INS_task.h"
 #include "bsp_power_ctrl.h"
 #include "chassis_task.h"
+#include "referee.h"
+#include "protocol.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -92,6 +95,8 @@ DMA_HandleTypeDef hdma_usart2_tx;
 DMA_HandleTypeDef hdma_usart6_rx;
 DMA_HandleTypeDef hdma_usart6_tx;
 
+extern QueueHandle_t referee_send_queue;
+
 osThreadId led_triggerHandle;
 /* USER CODE BEGIN PV */
 osThreadId cali_taskHandle;
@@ -140,6 +145,8 @@ void led_trigger_task(void const * argument);
 extern void remote_control_init(void);
 extern void chassis_distance_calc_task(void const * argument);
 extern void chassis_distance_send_task(void const * argument);
+extern void referee_task(void const * argument);
+
 
 /* USER CODE END PFP */
 
@@ -246,6 +253,8 @@ int main(void)
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
+	
+	referee_send_queue = xQueueCreate(RECIVE_BUFFER_SIZE, RECIVE_TERM_SIZE);
 
   /* Create the thread(s) */
   /* definition and creation of led_trigger */
@@ -268,12 +277,16 @@ int main(void)
   osThreadDef(chassis, chassis_task, osPriorityHigh, 0, 512);
   chassis_taskHandle = osThreadCreate(osThread(chassis), NULL);
 
-  osThreadDef(chassis_distance, chassis_distance_calc_task, osPriorityRealtime, 0, 512);
-  chassis_distance_taskHandle = osThreadCreate(osThread(chassis_distance), NULL);
+  
   
   osThreadDef(chassis_send, chassis_distance_send_task, osPriorityHigh, 0, 512);
   chassis_distance_send_taskHandle = osThreadCreate(osThread(chassis_send), NULL);
-
+	
+	osThreadDef(referee, referee_task, osPriorityHigh, 0, 512);
+  referee_taskHandle = osThreadCreate(osThread(referee), NULL);
+	
+//	osThreadDef(chassis_distance, chassis_distance_calc_task, osPriorityHigh, 0, 512);
+//  chassis_distance_taskHandle = osThreadCreate(osThread(chassis_distance), NULL);
 
 
   /* USER CODE END RTOS_THREADS */

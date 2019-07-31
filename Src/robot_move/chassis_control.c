@@ -44,7 +44,7 @@ void chassis_motor_speed_update(chassis_move_t *chassis_move_update)
 
 void chassis_vector_to_mecanum_wheel_speed(const fp32 vx_set, const fp32 vy_set, const fp32 wz_set, fp32 wheel_speed[4])
 {
-    wheel_speed[0]=vx_set+vy_set+wz_set*AB;
+    wheel_speed[0]=-(vx_set+vy_set+wz_set*AB);
 	wheel_speed[1]=vx_set-vy_set-wz_set*AB;
 	wheel_speed[2]=vx_set+vy_set-wz_set*AB;
 	wheel_speed[3]=-vx_set+vy_set-wz_set*AB;
@@ -97,7 +97,7 @@ void chassis_distance_send_task(void const * argument)
     while(1)
     {
         uint8_t send_len;
-        send_len = chassis_odom_pack_solve( distance_x, distance_y, distance_wz, chassis_move.vx, chassis_move.vy, chassis_move.wz, chassis_move.chassis_gyro_z, chassis_move.chassis_yaw);
+        //send_len = chassis_odom_pack_solve( distance_x, distance_y, distance_wz, chassis_move.vx, chassis_move.vy, chassis_move.wz, chassis_move.chassis_gyro_z, chassis_move.chassis_yaw);
         osDelay(10);
     }
     
