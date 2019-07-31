@@ -8,6 +8,7 @@
 #define RECIVE_TERM_SIZE 129
 #define RECIVE_BUFFER_SIZE 256
 
+extern void referee_task(void const * argument);
 
 
 extern uint16_t referee_data_solve(uint8_t *frame);

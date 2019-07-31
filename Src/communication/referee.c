@@ -43,9 +43,10 @@ QueueHandle_t referee_send_queue;
 //RM协议解析函数，系统自动调用
 void referee_task(void const * argument)
 {
+	
     usb_fifo_init();
     xTaskCreate((TaskFunction_t)referee_send_task, "send_task", 512, NULL, 0, &referee_send_handle);
-    referee_send_queue = xQueueCreate(RECIVE_BUFFER_SIZE, RECIVE_TERM_SIZE);
+    
     while(1)
     {
       referee_unpack_fifo_data();
