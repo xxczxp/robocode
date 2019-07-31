@@ -372,7 +372,7 @@ Mat* MatInv(Mat* src, Mat* dst)
 	MatAdj(src, &adj_mat);
 	det = MatDet(src);
 
-	if(equal(det, 0.0f)){
+	if(equal(det, 0.0)){
 		printf("err, determinate is 0 for MatInv\n");
 		return NULL;
 	}
