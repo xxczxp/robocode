@@ -115,7 +115,16 @@ void chassis_normal_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_mo
 
     chassis_rc_to_control_vector(vx_set, vy_set, chassis_move_rc_to_vector);
     *wz_set = -CHASSIS_WZ_RC_SEN * chassis_move_rc_to_vector->chassis_RC->rc.ch[CHASSIS_WZ_CHANNEL];
-}
+	}
+
+
+
+location_t target;
+location_t current;
+PidTypeDef PID_Lx ;
+PidTypeDef PID_Ly ;
+PidTypeDef PID_Lw ;
+
 
 void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector)
 {
@@ -123,9 +132,14 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
     {
         return;
     }
-	*vx_set =ch_auto_control_data.vx;
-	*vy_set =ch_auto_control_data.vy;
-	*wz_set =ch_auto_control_data.vw;
+	//±’Œª÷√ª∑
+   current.x = distance_x;
+	 current.y = distance_y;
+	 current.w = distance_wz;
+	 
+	*vx_set = PID_Calc_L(&PID_Lx, current.x, target.x);
+	*vy_set = PID_Calc_L(&PID_Ly, current.y, target.y);
+	*wz_set = PID_Calc_L(&PID_Lw, current.w, target.w);
 	
     return;
 }
