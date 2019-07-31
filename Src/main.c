@@ -96,6 +96,7 @@ DMA_HandleTypeDef hdma_usart6_rx;
 DMA_HandleTypeDef hdma_usart6_tx;
 
 extern QueueHandle_t referee_send_queue;
+extern TimerHandle_t referee_send_handle;
 
 osThreadId led_triggerHandle;
 /* USER CODE BEGIN PV */
@@ -146,7 +147,7 @@ extern void remote_control_init(void);
 extern void chassis_distance_calc_task(void const * argument);
 extern void chassis_distance_send_task(void const * argument);
 extern void referee_task(void const * argument);
-
+extern void referee_send_task(void const * argument);
 
 /* USER CODE END PFP */
 
@@ -255,11 +256,13 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 	
 	referee_send_queue = xQueueCreate(RECIVE_BUFFER_SIZE, RECIVE_TERM_SIZE);
+	
+	xTaskCreate((TaskFunction_t)referee_send_task, "send_task", 512, NULL, osPriorityHigh, &referee_send_handle);
 
   /* Create the thread(s) */
   /* definition and creation of led_trigger */
-  osThreadDef(led_trigger, led_trigger_task, osPriorityLow, 0, 128);
-  led_triggerHandle = osThreadCreate(osThread(led_trigger), NULL);
+//  osThreadDef(led_trigger, led_trigger_task, osPriorityLow, 0, 128);
+//  led_triggerHandle = osThreadCreate(osThread(led_trigger), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -267,8 +270,8 @@ int main(void)
   ins_taskHandle = osThreadCreate(osThread(ins_task), NULL);
 
 
-  osThreadDef(cali_task, calibrate_task, osPriorityNormal, 0, 512);
-  cali_taskHandle = osThreadCreate(osThread(cali_task), NULL);
+//  osThreadDef(cali_task, calibrate_task, osPriorityNormal, 0, 512);
+//  cali_taskHandle = osThreadCreate(osThread(cali_task), NULL);
 
   osThreadDef(detect, DetectTask, osPriorityNormal, 0, 512);
   detect_taskHandle = osThreadCreate(osThread(detect), NULL);
@@ -279,14 +282,14 @@ int main(void)
 
   
   
-  osThreadDef(chassis_send, chassis_distance_send_task, osPriorityHigh, 0, 512);
-  chassis_distance_send_taskHandle = osThreadCreate(osThread(chassis_send), NULL);
+//  osThreadDef(chassis_send, chassis_distance_send_task, osPriorityHigh, 0, 512);
+//  chassis_distance_send_taskHandle = osThreadCreate(osThread(chassis_send), NULL);
 	
 	osThreadDef(referee, referee_task, osPriorityHigh, 0, 512);
   referee_taskHandle = osThreadCreate(osThread(referee), NULL);
 	
-//	osThreadDef(chassis_distance, chassis_distance_calc_task, osPriorityHigh, 0, 512);
-//  chassis_distance_taskHandle = osThreadCreate(osThread(chassis_distance), NULL);
+	osThreadDef(chassis_distance, chassis_distance_calc_task, osPriorityHigh, 0, 512);
+  chassis_distance_taskHandle = osThreadCreate(osThread(chassis_distance), NULL);
 
 
   /* USER CODE END RTOS_THREADS */

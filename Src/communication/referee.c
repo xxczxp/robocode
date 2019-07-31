@@ -40,12 +40,15 @@ TimerHandle_t referee_send_handle;
 QueueHandle_t referee_send_queue;
 
 
+
 //RM协议解析函数，系统自动调用
 void referee_task(void const * argument)
 {
 	
+	
     usb_fifo_init();
-    xTaskCreate((TaskFunction_t)referee_send_task, "send_task", 512, NULL, 0, &referee_send_handle);
+		
+    
     
     while(1)
     {
@@ -73,9 +76,12 @@ void usb_fifo_init(void)
   fifo_s_init(&usb_fifo, usb_fifo_buf, 512);
 }
 
+
+int i=0;
 //USB接收中断
 void usb_receiver(uint8_t *buf, uint32_t len)
 {
+	i++;
   fifo_s_puts(&usb_fifo, (char*)buf, len);
 }
 
