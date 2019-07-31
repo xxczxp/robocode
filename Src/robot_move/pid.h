@@ -17,6 +17,7 @@
 #ifndef PID_H
 #define PID_H
 #include "struct_typedef.h"
+#include "chassis_control.h"
 enum PID_MODE
 {
     PID_POSITION = 0,
@@ -48,5 +49,6 @@ typedef struct
 } PidTypeDef;
 extern void PID_Init(PidTypeDef *pid, uint8_t mode, const fp32 PID[3], fp32 max_out, fp32 max_iout);
 extern fp32 PID_Calc(PidTypeDef *pid, fp32 ref, fp32 set);
+extern void PID_Calc_L(PidTypeDef *pid_x, PidTypeDef *pid_y, location_t *target, location_t *current);
 extern void PID_clear(PidTypeDef *pid);
 #endif
