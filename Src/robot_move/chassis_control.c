@@ -11,7 +11,9 @@
 #define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 0.00005f
 #define AB 0.5f
 
-
+PidTypeDef auto_x;
+PidTypeDef auto_y;
+PidTypeDef auto_wz;
 extern uint8_t chassis_odom_pack_solve(
   float x,
   float y,
@@ -22,6 +24,9 @@ extern uint8_t chassis_odom_pack_solve(
   float gyro_z,
   float gyro_yaw);
 extern uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
+extern int	result[2];
+location_t current;
+location_t target;
 
 
 
@@ -123,11 +128,16 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
     {
         return;
     }
-	*vx_set =ch_auto_control_data.vx;
-	*vy_set =ch_auto_control_data.vy;
-	*wz_set =ch_auto_control_data.vw;
-	
-    return;
+
+	//±’Œª÷√ª∑
+  
+	current.x = distance_x;
+	current.y = distance_y;
+	current.w = distance_wz;
+	PID_Calc_L(&auto_x, &auto_y, &target, &current);
+	*vx_set =result[0];
+	*vy_set =result[1];
+	*wz_set =PID_Calc(&auto_wz, current.w, target.w);
 }
 
 

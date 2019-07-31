@@ -29,5 +29,10 @@
 #define CHASSIS_ANGLE_PID_MAX_IOUT 0.2f
 
 
+typedef struct{
+int x;
+int y;
+int w;
+}location_t;
 
 #endif

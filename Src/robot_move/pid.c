@@ -14,9 +14,12 @@
   @endverbatim
   ****************************(C) COPYRIGHT 2016 DJI****************************
   */
-
+#include <stdio.h>
 #include "pid.h"
 #include "main.h"
+#include "math.h"
+#include "chassis_control.h"
+#include "light_matrix.h"
 
 #define LimitMax(input, max)   \
     {                          \
@@ -73,6 +76,54 @@ fp32 PID_Calc(PidTypeDef *pid, fp32 ref, fp32 set)
     return pid->out;
 }
 
+
+
+int result[2];
+void PID_Calc_L(PidTypeDef *pid_x, PidTypeDef *pid_y, location_t *target, location_t *current)
+{
+    if ((pid_x == NULL || pid_y == NULL) || (pid_x->mode == PID_LOCATION && pid_y->mode == PID_LOCATION ))
+    {
+        printf("pid is NULL !");
+    }
+
+    pid_x->error[2] = pid_x->error[1];
+    pid_x->error[1] = pid_x->error[0];
+    pid_x->set = target -> x;
+    pid_x->fdb = current -> x;
+    pid_x->error[0] = target -> x  - current -> x;
+		
+		pid_y->error[2] = pid_y->error[1];
+    pid_y->error[1] = pid_y->error[0];
+    pid_y->set = target -> y;
+    pid_y->fdb = current -> y;
+    pid_y->error[0] = target -> y  - current -> y;
+    
+		Mat RotationT ;
+		Mat MoveV ;
+		Mat Tresult ; 
+		
+		MatCreate(&RotationT, 2, 2);
+		MatCreate(&MoveV, 1, 2);
+		MatCreate(&Tresult, 1, 2);
+		
+		RotationT.element[0][0]=  cos(current -> w);
+		RotationT.element[0][1]= -sin(current -> w);
+		RotationT.element[1][0]=  sin(current -> w);
+		RotationT.element[1][1]=  cos(current -> w);
+		
+		MoveV.element[0][0] = pid_x->error[0];
+		MoveV.element[0][1] = pid_y->error[0];
+		
+		MatMul(&RotationT, &MoveV, &Tresult);
+		int transform_x, transform_y;
+		transform_x = Tresult.element[0][0];
+		transform_y = Tresult.element[0][1];
+		
+		result[0] = PID_Calc(pid_x, current -> x, transform_x);
+    result[1] = PID_Calc(pid_y, current -> y, transform_y);
+		}
+
+		
 void PID_clear(PidTypeDef *pid)
 {
     if (pid == NULL)

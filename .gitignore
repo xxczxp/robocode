@@ -80,3 +80,5 @@ PROJECT_PROJ.XSD
 *.SVD
 *.XML
 Src/communication/.DS_Store
+MDK-ARM/HAL_INFANTRY.uvprojx
+MDK-ARM/HAL_INFANTRY.uvoptx
