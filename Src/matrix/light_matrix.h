@@ -22,7 +22,7 @@
 
 typedef struct  {
 	int row, col;
-	float **element;
+	float **element;   /*µ¥Ôª£¿£¿£¿*/
 }Mat;
 
 Mat* MatCreate(Mat* mat, int row, int col);
