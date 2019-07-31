@@ -79,3 +79,4 @@ PROJECT_PROJ.XSD
 *.SVD.XML
 *.SVD
 *.XML
+Src/communication/.DS_Store
