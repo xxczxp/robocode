@@ -131,16 +131,23 @@ void chassis_normal_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_mo
     *wz_set = -CHASSIS_WZ_RC_SEN * chassis_move_rc_to_vector->chassis_RC->rc.ch[CHASSIS_WZ_CHANNEL];
 }
 
+
+extern chassis_ctrl_info_t ch_auto_control_data;
 void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector)
 {
     if (vx_set == NULL || vy_set == NULL || wz_set == NULL || chassis_move_rc_to_vector == NULL)
     {
-		
+				
         return;
     }
-
+		
+		
+		
+	*vx_set=ch_auto_control_data.vx;
+		*vy_set=ch_auto_control_data.vy;
+		*wz_set=ch_auto_control_data.vw;
 	//±’Œª÷√ª∑
-  
+  return;
 	current.x = distance_x;
 	current.y = distance_y;
 	current.w = distance_wz;
