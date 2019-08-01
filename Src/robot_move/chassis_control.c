@@ -8,8 +8,8 @@
 #include "protocol.h"
 #include "cmsis_os.h"
 
-#define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 0.00005f
-#define AB 0.5f
+#define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 1.10537517e-4
+#define AB 0.25f
 
 PidTypeDef auto_x;
 PidTypeDef auto_y;
@@ -57,16 +57,24 @@ void chassis_vector_to_mecanum_wheel_speed(const fp32 vx_set, const fp32 vy_set,
     
 }
 
-int32_t v[4]={0,0,0,0};
-int32_t sv[4]={0,0,0,0};
-int32_t dv[4]={0,0,0,0};
+float v[4]={0,0,0,0};
+float sv[4]={0,0,0,0};
+float dv[4]={0,0,0,0};
+
+float encode_sign[4];
 
 fp32 distance_x = 0.0f, distance_y = 0.0f, distance_wz = 0.0f;
 void chassis_distance_calc_task(void const * argument)
 {
 		
 		float x,y,theta,s[4];
-	
+	distance_x=0;
+	distance_y=0;
+	distance_wz=0;
+	encode_sign[0]=-1;
+	encode_sign[1]=1;
+	encode_sign[2]=1;
+	encode_sign[3]=-1;
     
     while(1)
     {
@@ -75,8 +83,8 @@ void chassis_distance_calc_task(void const * argument)
 		}
 				for(int i=0;i<4;i++){
 			sv[i]=v[i];
-			v[i]=chassis_move.motor_chassis[i].chassis_motor_measure->total_ecd;
-					dv[i]=(v[i]-sv[i])*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN;
+			v[i]=(float)chassis_move.motor_chassis[i].chassis_motor_measure->total_ecd;
+					dv[i]=(v[i]-sv[i])*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN*encode_sign[i];
 		}
 			
 			x=(-dv[0]+ dv[1]+dv[2]-dv[3])/4;
@@ -91,7 +99,7 @@ void chassis_distance_calc_task(void const * argument)
 				distance_wz+=theta;
 								
 		
-        osDelay(1);
+        osDelay(10);
     }
 }
 

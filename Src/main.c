@@ -261,19 +261,19 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of led_trigger */
-//  osThreadDef(led_trigger, led_trigger_task, osPriorityLow, 0, 128);
-//  led_triggerHandle = osThreadCreate(osThread(led_trigger), NULL);
+  osThreadDef(led_trigger, led_trigger_task, osPriorityLow, 0, 128);
+  led_triggerHandle = osThreadCreate(osThread(led_trigger), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  osThreadDef(ins_task, INSTask, osPriorityRealtime, 0, 512);
+  osThreadDef(ins_task, INSTask, osPriorityHigh, 0, 512);
   ins_taskHandle = osThreadCreate(osThread(ins_task), NULL);
 
 
 //  osThreadDef(cali_task, calibrate_task, osPriorityNormal, 0, 512);
 //  cali_taskHandle = osThreadCreate(osThread(cali_task), NULL);
 
-  osThreadDef(detect, DetectTask, osPriorityNormal, 0, 512);
+  osThreadDef(detect, DetectTask, osPriorityNormal, 0, 256);
   detect_taskHandle = osThreadCreate(osThread(detect), NULL);
 
 
