@@ -49,7 +49,7 @@ void chassis_motor_speed_update(chassis_move_t *chassis_move_update)
 
 void chassis_vector_to_mecanum_wheel_speed(const fp32 vx_set, const fp32 vy_set, const fp32 wz_set, fp32 wheel_speed[4])
 {
-    wheel_speed[0]=vx_set+vy_set+wz_set*AB;
+    wheel_speed[0]=-(vx_set+vy_set+wz_set*AB);
 	wheel_speed[1]=vx_set-vy_set-wz_set*AB;
 	wheel_speed[2]=vx_set+vy_set-wz_set*AB;
 	wheel_speed[3]=-vx_set+vy_set-wz_set*AB;
@@ -61,7 +61,7 @@ int32_t v[4]={0,0,0,0};
 int32_t sv[4]={0,0,0,0};
 int32_t dv[4]={0,0,0,0};
 
-static fp32 distance_x = 0.0f, distance_y = 0.0f, distance_wz = 0.0f;
+fp32 distance_x = 0.0f, distance_y = 0.0f, distance_wz = 0.0f;
 void chassis_distance_calc_task(void const * argument)
 {
 		
@@ -76,8 +76,9 @@ void chassis_distance_calc_task(void const * argument)
 				for(int i=0;i<4;i++){
 			sv[i]=v[i];
 			v[i]=chassis_move.motor_chassis[i].chassis_motor_measure->total_ecd;
-					dv[i]=v[i]-sv[i];
+					dv[i]=(v[i]-sv[i])*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN;
 		}
+			
 			x=(-dv[0]+ dv[1]+dv[2]-dv[3])/4;
 			y=(dv[0]- dv[1]+dv[2]-dv[3])/4;   
 			theta=(dv[0]- dv[1]-dv[2]+dv[3])/(4*AB);  
@@ -85,8 +86,8 @@ void chassis_distance_calc_task(void const * argument)
 		chassis_move.vx=(-s[0]+ s[1]+s[2]-s[3])/4;
 				chassis_move.vy=(s[0]- s[1]+s[2]-s[3])/4;   
 				chassis_move.wz=(s[0]- s[1]-s[2]+s[3])/(4*AB); 
-				distance_x+=(cos(theta)*x-sin(theta)*y);
-				distance_y+=(sin(theta)*x+sin(theta)*y);
+				distance_x+=(cos(distance_wz)*x-sin(distance_wz)*y);
+				distance_y+=(sin(distance_wz)*x+sin(distance_wz)*y);
 				distance_wz+=theta;
 								
 		

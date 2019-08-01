@@ -288,7 +288,7 @@ int main(void)
 	osThreadDef(referee, referee_task, osPriorityHigh, 0, 512);
   referee_taskHandle = osThreadCreate(osThread(referee), NULL);
 	
-	osThreadDef(chassis_distance, chassis_distance_calc_task, osPriorityHigh, 0, 512);
+	osThreadDef(chassis_distance, chassis_distance_calc_task, osPriorityRealtime, 0, 512);
   chassis_distance_taskHandle = osThreadCreate(osThread(chassis_distance), NULL);
 
 

@@ -104,8 +104,8 @@ void PID_Calc_L(PidTypeDef *pid_x, PidTypeDef *pid_y, location_t *target, locati
 	float k[3][6];
 		
 		MatInit(&RotationT, 2, 2,k[0]);
-		MatInit(&MoveV, 1, 2,k[0]);
-		MatInit(&Tresult, 1, 2,k[0]);
+		MatInit(&MoveV, 1, 2,k[2]);
+		MatInit(&Tresult, 1, 2,k[3]);
 		
 		RotationT.element[0][0]=  cos(current -> w);
 		RotationT.element[0][1]= -sin(current -> w);
