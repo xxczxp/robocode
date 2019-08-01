@@ -26,6 +26,7 @@ typedef struct  {
 }Mat;
 
 Mat* MatCreate(Mat* mat, int row, int col);
+void MatInit(Mat* mat,int row, int col,float *thing);
 void MatDelete(Mat* mat);
 Mat* MatSetVal(Mat* mat, float* val);
 void MatDump(const Mat* mat);

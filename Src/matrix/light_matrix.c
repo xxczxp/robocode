@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAT_LEGAL_CHECKING
+//#define MAT_LEGAL_CHECKING
 
 #define min(a, b) ((a) > (b) ? (b) : (a))
 #define equal(a, b)	((a-b)<1e-7 && (a-b)>-(1e-7))
@@ -107,6 +107,14 @@ Mat* MatCreate(Mat* mat, int row, int col)
 	mat->col = col;
 
 	return mat;
+}
+
+//thing's size= row+row*col
+void MatInit(Mat* mat,int row, int col,float *thing){
+	mat->element=(float**)thing;
+	for(int i=0;i<row;i++){
+		mat->element[i]=thing+row+i*row;
+	}
 }
 
 void MatDelete(Mat* mat)
