@@ -235,6 +235,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
     remote_control_init();
     cali_param_init();
+	
+	pwm_all_init();
 
     power_ctrl_on(0);
     HAL_Delay(137);
@@ -264,6 +266,19 @@ int main(void)
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
+  steering_engine pwminit;
+	pwminit.htim=htim4;
+	pwminit.channel=TIM_CHANNEL_1;
+  while(1){
+	  
+	  
+	  change_pwm(&pwminit,0.0);
+	  osDelay(1000);
+	  change_pwm(&pwminit,90.0);
+	  osDelay(1000);
+}	  
+	  
+  
 
 	referee_send_queue = xQueueCreate(RECIVE_BUFFER_SIZE, RECIVE_TERM_SIZE);
 

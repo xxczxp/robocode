@@ -24,7 +24,7 @@
 
 #include "Detect_Task.h"
 //遥控器出错数据上限
-#define RC_CHANNAL_ERROR_VALUE 700
+#define RC_channel_ERROR_VALUE 700
 
 //取正函数
 static int16_t RC_abs(int16_t value);
@@ -51,19 +51,19 @@ const RC_ctrl_t *get_remote_control_point(void)
 uint8_t RC_data_is_error(void)
 {
     //使用了go to语句 方便出错统一处理遥控器变量数据归零
-    if (RC_abs(rc_ctrl.rc.ch[0]) > RC_CHANNAL_ERROR_VALUE)
+    if (RC_abs(rc_ctrl.rc.ch[0]) > RC_channel_ERROR_VALUE)
     {
         goto error;
     }
-    if (RC_abs(rc_ctrl.rc.ch[1]) > RC_CHANNAL_ERROR_VALUE)
+    if (RC_abs(rc_ctrl.rc.ch[1]) > RC_channel_ERROR_VALUE)
     {
         goto error;
     }
-    if (RC_abs(rc_ctrl.rc.ch[2]) > RC_CHANNAL_ERROR_VALUE)
+    if (RC_abs(rc_ctrl.rc.ch[2]) > RC_channel_ERROR_VALUE)
     {
         goto error;
     }
-    if (RC_abs(rc_ctrl.rc.ch[3]) > RC_CHANNAL_ERROR_VALUE)
+    if (RC_abs(rc_ctrl.rc.ch[3]) > RC_channel_ERROR_VALUE)
     {
         goto error;
     }
