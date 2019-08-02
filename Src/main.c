@@ -33,7 +33,7 @@
 #include "chassis_task.h"
 #include "referee.h"
 #include "protocol.h"
-
+#include "pwm.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -237,6 +237,7 @@ int main(void)
     power_ctrl_on(3);
     HAL_Delay(137);
 
+		set_pwm ();
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
