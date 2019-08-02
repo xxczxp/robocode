@@ -237,7 +237,7 @@ int main(void)
     power_ctrl_on(3);
     HAL_Delay(137);
 
-		set_pwm ();
+//		set_pwm ();
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -258,7 +258,7 @@ int main(void)
 	
 	referee_send_queue = xQueueCreate(RECIVE_BUFFER_SIZE, RECIVE_TERM_SIZE);
 	
-	xTaskCreate((TaskFunction_t)referee_send_task, "send_task", 512, NULL, osPriorityHigh, &referee_send_handle);
+	xTaskCreate((TaskFunction_t)referee_send_task, "send_task", 256, NULL, osPriorityHigh, &referee_send_handle);
 
   /* Create the thread(s) */
   /* definition and creation of led_trigger */
@@ -286,10 +286,10 @@ int main(void)
 //  osThreadDef(chassis_send, chassis_distance_send_task, osPriorityHigh, 0, 512);
 //  chassis_distance_send_taskHandle = osThreadCreate(osThread(chassis_send), NULL);
 	
-	osThreadDef(referee, referee_task, osPriorityHigh, 0, 512);
+	osThreadDef(referee, referee_task, osPriorityHigh, 0, 256);
   referee_taskHandle = osThreadCreate(osThread(referee), NULL);
 	
-	osThreadDef(chassis_distance, chassis_distance_calc_task, osPriorityRealtime, 0, 512);
+	osThreadDef(chassis_distance, chassis_distance_calc_task, osPriorityRealtime, 0, 256);
   chassis_distance_taskHandle = osThreadCreate(osThread(chassis_distance), NULL);
 
 
@@ -1156,9 +1156,9 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 0;
+  htim4.Init.Prescaler = 83;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 0;
+  htim4.Init.Period = 19999;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)

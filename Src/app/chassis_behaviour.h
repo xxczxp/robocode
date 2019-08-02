@@ -30,6 +30,7 @@ typedef enum
 
 
 
+extern void loc_Init(location_t *loc);
 
 extern void chassis_behaviour_mode_set(chassis_move_t *chassis_move_mode);
 

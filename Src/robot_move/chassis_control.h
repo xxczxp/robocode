@@ -5,6 +5,7 @@
 
 
 //底盘电机速度环PID
+
 #define M3505_MOTOR_SPEED_PID_KP 15000.0f
 #define M3505_MOTOR_SPEED_PID_KI 10.0f
 #define M3505_MOTOR_SPEED_PID_KD 0.0f
@@ -30,9 +31,9 @@
 
 
 typedef struct{
-int x;
-int y;
-int w;
+float x;
+float y;
+float w;
 }location_t;
 
 #endif

@@ -92,8 +92,8 @@ void chassis_task(void const *pvParameters)
         //底盘控制PID计算
         chassis_control_loop(&chassis_move);
 
-//        if (!(toe_is_error(ChassisMotor1TOE) || toe_is_error(ChassisMotor2TOE) || toe_is_error(ChassisMotor3TOE) || toe_is_error(ChassisMotor4TOE)))
-//        {
+        if (!(toe_is_error(ChassisMotor1TOE) || toe_is_error(ChassisMotor2TOE) || toe_is_error(ChassisMotor3TOE) || toe_is_error(ChassisMotor4TOE)))
+        {
             //当遥控器掉线的时候，为relax状态，底盘电机指令为零，为了保证一定发送为零，故而不采用设置give_current的方法
             if (toe_is_error(DBUSTOE))
             {
@@ -104,7 +104,7 @@ void chassis_task(void const *pvParameters)
                 CAN_CMD_CHASSIS(chassis_move.motor_chassis[0].give_current, chassis_move.motor_chassis[1].give_current,
                                 chassis_move.motor_chassis[2].give_current, chassis_move.motor_chassis[3].give_current);
             }
-//        }
+        }
         //系统延时
         vTaskDelay(CHASSIS_CONTROL_TIME_MS);
 
@@ -170,7 +170,7 @@ static void chassis_set_mode(chassis_move_t *chassis_move_mode)
     chassis_behaviour_mode_set(chassis_move_mode);
 }
 
-static void chassis_mode_change_control_transit(chassis_move_t *chassis_move_transit)
+ void chassis_mode_change_control_transit(chassis_move_t *chassis_move_transit)
 {
     if (chassis_move_transit == NULL)
     {
@@ -289,6 +289,8 @@ static void chassis_set_contorl(chassis_move_t *chassis_move_control)
         //设置底盘运动的速度
         chassis_move_control->vx_set = fp32_constrain(vx_set, chassis_move_control->vx_min_speed, chassis_move_control->vx_max_speed);
         chassis_move_control->vy_set = fp32_constrain(vy_set, chassis_move_control->vy_min_speed, chassis_move_control->vy_max_speed);
+//			chassis_move_control->vx_set = vx_set, chassis_move_control->vx_min_speed, chassis_move_control->vx_max_speed;
+//        chassis_move_control->vy_set = vy_set, chassis_move_control->vy_min_speed, chassis_move_control->vy_max_speed;
         //计算旋转的角速度
         chassis_move_control->wz_set = wz_set;
     }

@@ -78,7 +78,7 @@ fp32 PID_Calc(PidTypeDef *pid, fp32 ref, fp32 set)
 
 
 
-int result[2];
+float result[2];
 void PID_Calc_L(PidTypeDef *pid_x, PidTypeDef *pid_y, location_t *target, location_t *current)
 {
     if ((pid_x == NULL || pid_y == NULL) || (pid_x->mode == PID_LOCATION && pid_y->mode == PID_LOCATION ))
@@ -86,17 +86,17 @@ void PID_Calc_L(PidTypeDef *pid_x, PidTypeDef *pid_y, location_t *target, locati
 //        printf("pid is NULL !");
     }
 
-    pid_x->error[2] = pid_x->error[1];
-    pid_x->error[1] = pid_x->error[0];
-    pid_x->set = target -> x;
-    pid_x->fdb = current -> x;
-    pid_x->error[0] = target -> x  - current -> x;
-		
-		pid_y->error[2] = pid_y->error[1];
-    pid_y->error[1] = pid_y->error[0];
-    pid_y->set = target -> y;
-    pid_y->fdb = current -> y;
-    pid_y->error[0] = target -> y  - current -> y;
+//    pid_x->error[2] = pid_x->error[1];
+//    pid_x->error[1] = pid_x->error[0];
+//    pid_x->set = target -> x;
+//    pid_x->fdb = current -> x;
+//    pid_x->error[0] = target -> x  - current -> x;
+//		
+//		pid_y->error[2] = pid_y->error[1];
+//    pid_y->error[1] = pid_y->error[0];
+//    pid_y->set = target -> y;
+//    pid_y->fdb = current -> y;
+//    pid_y->error[0] = target -> y  - current -> y;
     
 		Mat RotationT ;
 		Mat MoveV ;
@@ -104,24 +104,24 @@ void PID_Calc_L(PidTypeDef *pid_x, PidTypeDef *pid_y, location_t *target, locati
 	float k[3][6];
 		
 		MatInit(&RotationT, 2, 2,k[0]);
-		MatInit(&MoveV, 1, 2,k[2]);
-		MatInit(&Tresult, 1, 2,k[3]);
+		MatInit(&MoveV, 2, 1,k[1]);
+		MatInit(&Tresult, 2, 1,k[2]);
 		
 		RotationT.element[0][0]=  cos(current -> w);
 		RotationT.element[0][1]= -sin(current -> w);
 		RotationT.element[1][0]=  sin(current -> w);
 		RotationT.element[1][1]=  cos(current -> w);
 		
-		MoveV.element[0][0] = pid_x->error[0];
-		MoveV.element[0][1] = pid_y->error[0];
+		MoveV.element[0][0] = target -> x  - current -> x;
+		MoveV.element[1][0] =  target -> y  - current -> y;
 		
 		MatMul(&RotationT, &MoveV, &Tresult);
-		int transform_x, transform_y;
+		float transform_x, transform_y;
 		transform_x = Tresult.element[0][0];
-		transform_y = Tresult.element[0][1];
+		transform_y = Tresult.element[1][0];
 		
-		result[0] = PID_Calc(pid_x, current -> x, transform_x);
-    result[1] = PID_Calc(pid_y, current -> y, transform_y);
+		result[0] = PID_Calc(pid_x, current -> x, target -> x);
+    result[1] = PID_Calc(pid_y, current -> y, target -> y);
 	
 		}
 

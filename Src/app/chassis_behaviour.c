@@ -49,10 +49,14 @@ static void chassis_zero_force_control(fp32 *vx_can_set, fp32 *vy_can_set, fp32 
 
 static void chassis_no_move_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector);
 
-
+void loc_Init(location_t *loc){
+loc ->x = 0;
+loc ->y = 0;
+loc ->w = 0;
+}
 
 //µ×ÅÌÐÐÎª×´Ì¬»ú
-static chassis_behaviour_e chassis_behaviour_mode = CHASSIS_ZERO_FORCE;
+chassis_behaviour_e chassis_behaviour_mode = CHASSIS_ZERO_FORCE;
 
 void chassis_behaviour_mode_set(chassis_move_t *chassis_move_mode)
 {

@@ -114,9 +114,11 @@ void MatInit(Mat* mat,int row, int col,float *thing){
 	mat->element=(float**)thing;
 	for(int i=0;i<row;i++){
 		mat->element[i]=thing+row+i*row;
+	
+	mat->col=col;
+		mat->row=row;
 	}
 }
-
 void MatDelete(Mat* mat)
 {
 	int i;
