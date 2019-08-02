@@ -21,7 +21,9 @@ typedef enum
   GAME_STATUS_CMD_ID = 0x0001,
   CHASSIS_ODOM_CMD_ID = 0x0101,
   CHASSIS_CTRL_CMD_ID = 0x0102,
+	CHASSIS_POS_CMD_ID = 0x103,
   CLASS_COM_CMD_ID = 0xFFFF,
+
 } referee_data_cmd_id_tpye;
 
 //RM协议帧头结构体

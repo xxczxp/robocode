@@ -98,6 +98,7 @@ DMA_HandleTypeDef hdma_usart6_tx;
 extern QueueHandle_t referee_send_queue;
 extern TimerHandle_t referee_send_handle;
 
+
 osThreadId led_triggerHandle;
 /* USER CODE BEGIN PV */
 osThreadId cali_taskHandle;
@@ -150,6 +151,8 @@ extern void referee_task(void const * argument);
 extern void referee_send_task(void const * argument);
 
 /* USER CODE END PFP */
+
+SemaphoreHandle_t apriltag_handle;
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
@@ -242,11 +245,13 @@ int main(void)
     power_ctrl_on(3);
     HAL_Delay(137);
 
+
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
+  apriltag_handle=xSemaphoreCreateMutex();
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -262,7 +267,10 @@ int main(void)
 
 	referee_send_queue = xQueueCreate(RECIVE_BUFFER_SIZE, RECIVE_TERM_SIZE);
 
+
 	xTaskCreate((TaskFunction_t)referee_send_task, "send_task", 256, NULL, osPriorityHigh, &referee_send_handle);
+
+
 
   /* Create the thread(s) */
   /* definition and creation of led_trigger */

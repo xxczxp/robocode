@@ -5,11 +5,17 @@
 #include "protocol.h"
 #include "fifo.h"
 #include "cmsis_os.h"
+#include "main.h"
+#include "usb_device.h"
+#include "freertos.h"
+#include "semphr.h"
+#include "usbd_cdc_if.h"
 
 //º∆À„ Ω ‰»Î ˝æ›
 extern communicate_class_input_data_t communicate_input_data;
 //º∆À„ Ω ‰≥ˆΩ·π˚
 extern communicate_class_output_data_t communicate_output_data;
+extern void usb_receiver(uint8_t *buf,uint32_t len);
 
 //USBΩ” ’FIFO≥ı ºªØ
 void usb_fifo_init(void);
@@ -38,6 +44,9 @@ void communicate_class_solve(void);
 frame_header_struct_t referee_receive_header;
 TimerHandle_t referee_send_handle;
 QueueHandle_t referee_send_queue;
+
+apriltap_data_t apriltap_data;
+
 
 
 
@@ -81,11 +90,10 @@ int i=0;
 //USBΩ” ’÷–∂œ
 void usb_receiver(uint8_t *buf, uint32_t len)
 {
-	i++;
   fifo_s_puts(&usb_fifo, (char*)buf, len);
 }
 
-//RM–≠“È∑¥–Ú¡–ªØ
+//RM–≠“È∑¥–Ú¡–ª
 void referee_unpack_fifo_data(void)
 {
   uint8_t byte = 0;
@@ -224,6 +232,21 @@ uint16_t referee_data_solve(uint8_t *frame)
 			index+=sizeof(float);
 			break;
 		}
+		
+		case CHASSIS_POS_CMD_ID:
+		{
+			if(xSemaphoreTake(apriltag_handle,10)==pdTRUE){
+				apriltap_data.is_new=1;
+				memcpy(&apriltap_data.x,frame + index,sizeof(float));
+				index+=sizeof(float);
+				memcpy(&apriltap_data.y,frame + index,sizeof(float));
+				index+=sizeof(float);
+				memcpy(&apriltap_data.wz,frame + index,sizeof(float));
+				index+=sizeof(float);
+			}
+			xSemaphoreGive(apriltag_handle);
+			
+		}break;
 		
         default:
         {
