@@ -10,6 +10,8 @@
 
 #define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 1.10537517e-4
 #define AB 0.25f
+#define WHEEL_R 0.0072f
+#define ARG 8.09699e-7f
 
 PidTypeDef auto_x;
 PidTypeDef auto_y;
@@ -84,18 +86,18 @@ void chassis_distance_calc_task(void const * argument)
 				for(int i=0;i<4;i++){
 			sv[i]=v[i];
 			v[i]=(float)chassis_move.motor_chassis[i].chassis_motor_measure->total_ecd;
-					dv[i]=(v[i]-sv[i])*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN*encode_sign[i];
+					dv[i]=(v[i]-sv[i])*ARG*encode_sign[i];
 		}
 			
-			x=(-dv[0]+ dv[1]+dv[2]-dv[3])/4;
+			x=(dv[0]+ dv[1]+dv[2]+dv[3])/4;
 			y=(dv[0]- dv[1]+dv[2]-dv[3])/4;   
 			theta=(dv[0]- dv[1]-dv[2]+dv[3])/(4*AB);  
 				
-		chassis_move.vx=(-s[0]+ s[1]+s[2]-s[3])/4;
+		chassis_move.vx=(s[0]+ s[1]+s[2]+s[3])/4;
 				chassis_move.vy=(s[0]- s[1]+s[2]-s[3])/4;   
 				chassis_move.wz=(s[0]- s[1]-s[2]+s[3])/(4*AB); 
-				distance_x+=(cos(distance_wz)*x-sin(distance_wz)*y);
-				distance_y+=(sin(distance_wz)*x+sin(distance_wz)*y);
+				distance_x+=(arm_cos_f32(distance_wz)*x-arm_sin_f32(distance_wz)*y);
+				distance_y+=(arm_sin_f32(distance_wz)*x+arm_cos_f32(distance_wz)*y);
 				distance_wz+=theta;
 								
 		
