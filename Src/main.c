@@ -176,13 +176,13 @@ void USART2_IRQHandler(void)
 
 
 
-	
+
 int main(void)
 {
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
-  
+
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -241,9 +241,7 @@ int main(void)
     HAL_Delay(137);
     power_ctrl_on(3);
     HAL_Delay(137);
-		
-		  set_pwm ();
-		
+
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -261,9 +259,9 @@ int main(void)
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
-	
+
 	referee_send_queue = xQueueCreate(RECIVE_BUFFER_SIZE, RECIVE_TERM_SIZE);
-	
+
 	xTaskCreate((TaskFunction_t)referee_send_task, "send_task", 256, NULL, osPriorityHigh, &referee_send_handle);
 
   /* Create the thread(s) */
@@ -287,14 +285,14 @@ int main(void)
   osThreadDef(chassis, chassis_task, osPriorityHigh, 0, 512);
   chassis_taskHandle = osThreadCreate(osThread(chassis), NULL);
 
-  
-  
+
+
 //  osThreadDef(chassis_send, chassis_distance_send_task, osPriorityHigh, 0, 512);
 //  chassis_distance_send_taskHandle = osThreadCreate(osThread(chassis_send), NULL);
-	
+
 	osThreadDef(referee, referee_task, osPriorityHigh, 0, 256);
   referee_taskHandle = osThreadCreate(osThread(referee), NULL);
-	
+
 	osThreadDef(chassis_distance, chassis_distance_calc_task, osPriorityRealtime, 0, 256);
   chassis_distance_taskHandle = osThreadCreate(osThread(chassis_distance), NULL);
 
@@ -303,7 +301,7 @@ int main(void)
 
   /* Start scheduler */
   osKernelStart();
-  
+
   /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
@@ -324,18 +322,18 @@ int main(void)
 
 
 
-	
+
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-  /** Configure the main internal regulator output voltage 
+  /** Configure the main internal regulator output voltage
   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
@@ -349,7 +347,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -387,7 +385,7 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 1 */
 
   /* USER CODE END ADC1_Init 1 */
-  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
@@ -405,7 +403,7 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
   sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
   sConfig.Rank = 1;
@@ -437,7 +435,7 @@ static void MX_ADC2_Init(void)
   /* USER CODE BEGIN ADC2_Init 1 */
 
   /* USER CODE END ADC2_Init 1 */
-  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc2.Instance = ADC2;
   hadc2.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
@@ -455,7 +453,7 @@ static void MX_ADC2_Init(void)
   {
     Error_Handler();
   }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
   sConfig.Channel = ADC_CHANNEL_6;
   sConfig.Rank = 1;
@@ -487,7 +485,7 @@ static void MX_ADC3_Init(void)
   /* USER CODE BEGIN ADC3_Init 1 */
 
   /* USER CODE END ADC3_Init 1 */
-  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc3.Instance = ADC3;
   hadc3.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
@@ -505,7 +503,7 @@ static void MX_ADC3_Init(void)
   {
     Error_Handler();
   }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
   sConfig.Channel = ADC_CHANNEL_14;
   sConfig.Rank = 1;
@@ -670,13 +668,13 @@ static void MX_I2C2_Init(void)
   {
     Error_Handler();
   }
-  /** Configure Analogue filter 
+  /** Configure Analogue filter
   */
   if (HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
   {
     Error_Handler();
   }
-  /** Configure Digital filter 
+  /** Configure Digital filter
   */
   if (HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0) != HAL_OK)
   {
@@ -732,7 +730,7 @@ static void MX_RTC_Init(void)
   /* USER CODE BEGIN RTC_Init 1 */
 
   /* USER CODE END RTC_Init 1 */
-  /** Initialize RTC Only 
+  /** Initialize RTC Only
   */
   hrtc.Instance = RTC;
   hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
@@ -747,10 +745,10 @@ static void MX_RTC_Init(void)
   }
 
   /* USER CODE BEGIN Check_RTC_BKUP */
-    
+
   /* USER CODE END Check_RTC_BKUP */
 
-  /** Initialize RTC and set the Time and Date 
+  /** Initialize RTC and set the Time and Date
   */
   sTime.Hours = 0x0;
   sTime.Minutes = 0x0;
@@ -1523,7 +1521,7 @@ static void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
-    
+
   /* USER CODE END USART1_Init 2 */
 
 }
@@ -1627,10 +1625,10 @@ static void MX_USART6_UART_Init(void)
 
 }
 
-/** 
+/**
   * Enable DMA controller clock
   */
-static void MX_DMA_Init(void) 
+static void MX_DMA_Init(void)
 {
   /* DMA controller clock enable */
   __HAL_RCC_DMA2_CLK_ENABLE();
@@ -1685,8 +1683,8 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOE, IST8310_RST_Pin|SPI4_NSS_Pin|LED_RED_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOG, LASER_Pin|FLOW_LED_8_Pin|FLOW_LED_7_Pin|FLOW_LED_6_Pin 
-                          |FLOW_LED_5_Pin|FLOW_LED_4_Pin|FLOW_LED_3_Pin|FLOW_LED_2_Pin 
+  HAL_GPIO_WritePin(GPIOG, LASER_Pin|FLOW_LED_8_Pin|FLOW_LED_7_Pin|FLOW_LED_6_Pin
+                          |FLOW_LED_5_Pin|FLOW_LED_4_Pin|FLOW_LED_3_Pin|FLOW_LED_2_Pin
                           |FLOW_LED_1_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
@@ -1717,11 +1715,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(IMU_INT_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LASER_Pin FLOW_LED_8_Pin FLOW_LED_7_Pin FLOW_LED_6_Pin 
-                           FLOW_LED_5_Pin FLOW_LED_4_Pin FLOW_LED_3_Pin FLOW_LED_2_Pin 
+  /*Configure GPIO pins : LASER_Pin FLOW_LED_8_Pin FLOW_LED_7_Pin FLOW_LED_6_Pin
+                           FLOW_LED_5_Pin FLOW_LED_4_Pin FLOW_LED_3_Pin FLOW_LED_2_Pin
                            FLOW_LED_1_Pin */
-  GPIO_InitStruct.Pin = LASER_Pin|FLOW_LED_8_Pin|FLOW_LED_7_Pin|FLOW_LED_6_Pin 
-                          |FLOW_LED_5_Pin|FLOW_LED_4_Pin|FLOW_LED_3_Pin|FLOW_LED_2_Pin 
+  GPIO_InitStruct.Pin = LASER_Pin|FLOW_LED_8_Pin|FLOW_LED_7_Pin|FLOW_LED_6_Pin
+                          |FLOW_LED_5_Pin|FLOW_LED_4_Pin|FLOW_LED_3_Pin|FLOW_LED_2_Pin
                           |FLOW_LED_1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
@@ -1811,7 +1809,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN Header_led_trigger_task */
 /**
   * @brief  Function implementing the led_trigger thread.
-  * @param  argument: Not used 
+  * @param  argument: Not used
   * @retval None
   */
 /* USER CODE END Header_led_trigger_task */
@@ -1826,7 +1824,7 @@ __weak void led_trigger_task(void const * argument)
   {
     osDelay(1);
   }
-  /* USER CODE END 5 */ 
+  /* USER CODE END 5 */
 }
 
 /**
@@ -1850,7 +1848,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
