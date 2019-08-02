@@ -8,8 +8,10 @@
 #include "protocol.h"
 #include "cmsis_os.h"
 
-#define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 0.00005f
-#define AB 0.5f
+#define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 1.10537517e-4
+#define AB 0.25f
+#define WHEEL_R 0.0072f
+#define ARG 8.09699e-7f
 
 PidTypeDef auto_x;
 PidTypeDef auto_y;
@@ -57,16 +59,24 @@ void chassis_vector_to_mecanum_wheel_speed(const fp32 vx_set, const fp32 vy_set,
     
 }
 
-int32_t v[4]={0,0,0,0};
-int32_t sv[4]={0,0,0,0};
-int32_t dv[4]={0,0,0,0};
+float v[4]={0,0,0,0};
+float sv[4]={0,0,0,0};
+float dv[4]={0,0,0,0};
+
+float encode_sign[4];
 
 fp32 distance_x = 0.0f, distance_y = 0.0f, distance_wz = 0.0f;
 void chassis_distance_calc_task(void const * argument)
 {
 		
 		float x,y,theta,s[4];
-	
+	distance_x=0;
+	distance_y=0;
+	distance_wz=0;
+	encode_sign[0]=-1;
+	encode_sign[1]=1;
+	encode_sign[2]=1;
+	encode_sign[3]=-1;
     
     while(1)
     {
@@ -75,23 +85,23 @@ void chassis_distance_calc_task(void const * argument)
 		}
 				for(int i=0;i<4;i++){
 			sv[i]=v[i];
-			v[i]=chassis_move.motor_chassis[i].chassis_motor_measure->total_ecd;
-					dv[i]=(v[i]-sv[i])*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN;
+			v[i]=(float)chassis_move.motor_chassis[i].chassis_motor_measure->total_ecd;
+					dv[i]=(v[i]-sv[i])*ARG*encode_sign[i];
 		}
 			
-			x=(-dv[0]+ dv[1]+dv[2]-dv[3])/4;
+			x=(dv[0]+ dv[1]+dv[2]+dv[3])/4;
 			y=(dv[0]- dv[1]+dv[2]-dv[3])/4;   
 			theta=(dv[0]- dv[1]-dv[2]+dv[3])/(4*AB);  
 				
-		chassis_move.vx=(-s[0]+ s[1]+s[2]-s[3])/4;
+		chassis_move.vx=(s[0]+ s[1]+s[2]+s[3])/4;
 				chassis_move.vy=(s[0]- s[1]+s[2]-s[3])/4;   
 				chassis_move.wz=(s[0]- s[1]-s[2]+s[3])/(4*AB); 
-				distance_x+=(cos(distance_wz)*x-sin(distance_wz)*y);
-				distance_y+=(sin(distance_wz)*x+sin(distance_wz)*y);
+				distance_x+=(arm_cos_f32(distance_wz)*x-arm_sin_f32(distance_wz)*y);
+				distance_y+=(arm_sin_f32(distance_wz)*x+arm_cos_f32(distance_wz)*y);
 				distance_wz+=theta;
 								
 		
-        osDelay(1);
+        osDelay(10);
     }
 }
 
@@ -123,16 +133,23 @@ void chassis_normal_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_mo
     *wz_set = -CHASSIS_WZ_RC_SEN * chassis_move_rc_to_vector->chassis_RC->rc.ch[CHASSIS_WZ_CHANNEL];
 }
 
+
+extern chassis_ctrl_info_t ch_auto_control_data;
 void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector)
 {
     if (vx_set == NULL || vy_set == NULL || wz_set == NULL || chassis_move_rc_to_vector == NULL)
     {
-		
+				
         return;
     }
-
+		
+		
+		
+	*vx_set=ch_auto_control_data.vx;
+		*vy_set=ch_auto_control_data.vy;
+		*wz_set=ch_auto_control_data.vw;
 	//±’Œª÷√ª∑
-  
+  return;
 	current.x = distance_x;
 	current.y = distance_y;
 	current.w = distance_wz;
