@@ -8,12 +8,12 @@
 #include "protocol.h"
 #include "cmsis_os.h"
 
-#define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 1.10537517e-4
-#define AB 0.25f
+#define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 0.00005f
+#define AB 0.5f
 
-PidTypeDef auto_x;
-PidTypeDef auto_y;
-PidTypeDef auto_wz;
+PidTypeDef auto_x = {1, 1000, 500, 500};
+PidTypeDef auto_y = {1, 1000, 500, 500};
+PidTypeDef auto_wz = {1, 1000, 500, 500};
 extern uint8_t chassis_odom_pack_solve(
   float x,
   float y,
@@ -25,10 +25,9 @@ extern uint8_t chassis_odom_pack_solve(
   float gyro_yaw);
 extern uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
 extern int	result[2];
-location_t current;
-location_t target;
 
-
+	location_t current;
+location_t target = {0, 0, 0};
 
 //底盘运动数据
  chassis_move_t chassis_move;
@@ -57,24 +56,16 @@ void chassis_vector_to_mecanum_wheel_speed(const fp32 vx_set, const fp32 vy_set,
     
 }
 
-float v[4]={0,0,0,0};
-float sv[4]={0,0,0,0};
-float dv[4]={0,0,0,0};
-
-float encode_sign[4];
+int32_t v[4]={0,0,0,0};
+int32_t sv[4]={0,0,0,0};
+int32_t dv[4]={0,0,0,0};
 
 fp32 distance_x = 0.0f, distance_y = 0.0f, distance_wz = 0.0f;
 void chassis_distance_calc_task(void const * argument)
 {
 		
 		float x,y,theta,s[4];
-	distance_x=0;
-	distance_y=0;
-	distance_wz=0;
-	encode_sign[0]=-1;
-	encode_sign[1]=1;
-	encode_sign[2]=1;
-	encode_sign[3]=-1;
+	
     
     while(1)
     {
@@ -83,8 +74,8 @@ void chassis_distance_calc_task(void const * argument)
 		}
 				for(int i=0;i<4;i++){
 			sv[i]=v[i];
-			v[i]=(float)chassis_move.motor_chassis[i].chassis_motor_measure->total_ecd;
-					dv[i]=(v[i]-sv[i])*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN*encode_sign[i];
+			v[i]=chassis_move.motor_chassis[i].chassis_motor_measure->total_ecd;
+					dv[i]=(v[i]-sv[i])*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN;
 		}
 			
 			x=(-dv[0]+ dv[1]+dv[2]-dv[3])/4;
@@ -99,7 +90,7 @@ void chassis_distance_calc_task(void const * argument)
 				distance_wz+=theta;
 								
 		
-        osDelay(10);
+        osDelay(1);
     }
 }
 
@@ -131,30 +122,42 @@ void chassis_normal_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_mo
     *wz_set = -CHASSIS_WZ_RC_SEN * chassis_move_rc_to_vector->chassis_RC->rc.ch[CHASSIS_WZ_CHANNEL];
 }
 
-
-extern chassis_ctrl_info_t ch_auto_control_data;
-void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector)
+void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, location_t *target)
 {
-    if (vx_set == NULL || vy_set == NULL || wz_set == NULL || chassis_move_rc_to_vector == NULL)
+    if (vx_set == NULL || vy_set == NULL || wz_set == NULL || target == NULL)
     {
-				
         return;
     }
-		
-		
-		
-	*vx_set=ch_auto_control_data.vx;
-		*vy_set=ch_auto_control_data.vy;
-		*wz_set=ch_auto_control_data.vw;
+
 	//闭位置环
-  return;
+  
 	current.x = distance_x;
 	current.y = distance_y;
 	current.w = distance_wz;
-	PID_Calc_L(&auto_x, &auto_y, &target, &current);
+	PID_Calc_L(&auto_x, &auto_y, target, &current);
 	*vx_set =result[0];
 	*vy_set =result[1];
-	*wz_set =PID_Calc(&auto_wz, current.w, target.w);
+	*wz_set =PID_Calc(&auto_wz, current.w, target -> w);
+		
+}
+
+void chassis_auto_control_EX(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, location_t *target)
+{
+    if (vx_set == NULL || vy_set == NULL || wz_set == NULL || target == NULL)
+    {
+        return;
+    }
+
+	//闭位置环
+  
+	current.x = distance_x;
+	current.y = distance_y;
+	current.w = distance_wz;
+	PID_Calc_L(&auto_x, &auto_y, target, &current);
+	*vx_set =10;
+	*vy_set =result[1];
+	*wz_set =PID_Calc(&auto_wz, current.w, target -> w);
+		
 }
 
 
