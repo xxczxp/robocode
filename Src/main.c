@@ -95,6 +95,7 @@ DMA_HandleTypeDef hdma_usart2_tx;
 DMA_HandleTypeDef hdma_usart6_rx;
 DMA_HandleTypeDef hdma_usart6_tx;
 
+extern QueueHandle_t auto_queue;
 extern QueueHandle_t referee_send_queue;
 extern TimerHandle_t referee_send_handle;
 
@@ -273,7 +274,7 @@ int main(void)
   
 
 	referee_send_queue = xQueueCreate(RECIVE_BUFFER_SIZE, RECIVE_TERM_SIZE);
-
+	auto_queue = xQueueCreate(AUTO_RECIVE_BUFFER_SIZE, sizeof(auto_pack_t));
 
 	xTaskCreate((TaskFunction_t)referee_send_task, "send_task", 256, NULL, osPriorityHigh, &referee_send_handle);
 

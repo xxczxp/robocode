@@ -46,8 +46,12 @@ location_t target = {0, 0, 0};
  chassis_move_t chassis_move;
  uint8_t usb_tx[128];
 
+
   // auto_control unpacked data
 extern chassis_ctrl_info_t ch_auto_control_data;
+
+//real auto_control
+QueueHandle_t auto_queue;
 
 void chassis_motor_speed_update(chassis_move_t *chassis_move_update)
 {
@@ -185,15 +189,6 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
 		
 	double adjustment_dis_degee =distance_wz;
 		
-//	if (current.w >Pi){
-//		adjustment_dis_degee = current.w - Pi;
-//	}
-//	else if (current.w < -Pi){
-//	  adjustment_dis_degee = current.w + Pi;
-//	}
-//	else {
-//	adjustment_dis_degee = current.w;
-//	}
 	
 	double delta_degree = right_degree-adjustment_dis_degee;
 		while(delta_degree>PI)
@@ -205,18 +200,14 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
 	*vx_set = 0.5*PID_Calc(&auto_x,dis,target.x);
 	*vy_set = 0.6;
 	*wz_set = PID_Calc(&auto_wz, distance_wz,distance_wz+delta_degree);
-//		double revise_degree =  
-		
-		
-		
-		
-//	PID_Calc_L(&auto_x, &auto_y, &target, &current);
-//	*vx_set =result[0];
-//	*vy_set =result[1];
-//		*wz_set=PID_Calc(&auto_wz,current.w,target.w);
-//	*wz_set =PID_Calc(chassis_move_rc_to_vector ->motor_speed_pid, chassis_move.vx, target.w);
-//		*vx_set =PID_Calc(chassis_move_rc_to_vector ->motor_speed_pid, chassis_move.vy, target.w);
-//		*vy_set =PID_Calc(chassis_move_rc_to_vector ->motor_speed_pid, chassis_move.wz, target.w);
+	
+	
+}
+
+STEP_AUTO_STATE AUTO_STATE=CMD_GET;
+void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector){
+	
+	switch(AUTO_STATE){}
 }
 
 

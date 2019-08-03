@@ -1,3 +1,10 @@
+
+#define AUTO_RECIVE_BUFFER_SIZE 30
+
+#define X_PASS_LIMIT 0.05
+#define Y_PASS_LIMIT 0.05
+#define WZ_PASS_LIMIT 0.05
+
 #ifndef CHASSIS_CONTROL_H
 #define CHASSIS_CONTROL_H
 #include "struct_typedef.h"
@@ -38,9 +45,22 @@ float w;
 
 typedef enum{
 	MOVE_CMD,
+	PUT_BALLL_CMD
 }AUTO_CMD;
 
 typedef struct{
 	AUTO_CMD cmd;
+	location_t target;
 	}auto_pack_t;
+
+	
+extern QueueHandle_t auto_queue;
+	
+typedef enum{
+	MOVE,
+	PUT_BALL,
+	STOP
+}STEP_AUTO_STATE;
+	
+
 #endif
