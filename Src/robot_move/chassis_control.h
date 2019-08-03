@@ -9,7 +9,7 @@
 #define CHASSIS_CONTROL_H
 #include "struct_typedef.h"
 #include "referee.h"
-
+#include "chassis_task.h"
 
 
 //底盘电机速度环PID
@@ -45,11 +45,11 @@ float w;
 
 typedef enum{
 	MOVE_CMD,
-	PUT_BALLL_CMD
+	PUT_BALL_CMD
 }AUTO_CMD;
 
 typedef struct{
-	AUTO_CMD cmd;
+	int cmd;//AUTO_CMD
 	location_t target;
 	}auto_pack_t;
 
@@ -57,10 +57,12 @@ typedef struct{
 extern QueueHandle_t auto_queue;
 	
 typedef enum{
+	CMD_GET,
 	MOVE,
 	PUT_BALL,
 	STOP
 }STEP_AUTO_STATE;
 	
+extern void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector);
 
 #endif

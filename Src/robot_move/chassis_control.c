@@ -52,6 +52,7 @@ extern chassis_ctrl_info_t ch_auto_control_data;
 
 //real auto_control
 QueueHandle_t auto_queue;
+void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector);
 
 void chassis_motor_speed_update(chassis_move_t *chassis_move_update)
 {
@@ -201,13 +202,50 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
 	*vy_set = 0.6;
 	*wz_set = PID_Calc(&auto_wz, distance_wz,distance_wz+delta_degree);
 	
+		// step_auto_control(vx_set, vy_set, wz_set, chassis_move_rc_to_vector);
 	
 }
 
-STEP_AUTO_STATE AUTO_STATE=CMD_GET;
+int state=CMD_GET;
 void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector){
-	
-	switch(AUTO_STATE){}
+	static auto_pack_t pack;
+	switch(state){
+		case CMD_GET:
+		{
+			if(xQueueReceive(auto_queue,&pack,0)==pdPASS)
+			{
+				if(pack.cmd==MOVE_CMD)
+					state=MOVE;
+				else if(pack.cmd==PUT_BALL_CMD){
+					state=PUT_BALL;
+				}
+			}
+			*vx_set=0;
+			*vy_set = 0;
+			*wz_set = 0;
+			
+		}break;
+		case MOVE:
+		{
+			if((abs(current.x-distance_x)<X_PASS_LIMIT)&&(abs(current.y-distance_y)<Y_PASS_LIMIT) && (abs(current.w-distance_wz)<WZ_PASS_LIMIT))
+			{
+				
+				state=CMD_GET;
+				*vx_set=0;
+				*vy_set = 0;
+				*wz_set = 0;
+			}
+			else{
+				current.x=distance_x;
+				current.y=distance_y;
+				current.w=distance_wz;
+				PID_Calc_L(&auto_x, &auto_y, &pack.target, &current);
+				*vx_set =result[0];
+				*vy_set =result[1];
+				*wz_set=PID_Calc(&auto_wz,current.w,target.w);
+			}
+		}break;
+	}
 }
 
 
