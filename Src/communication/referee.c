@@ -54,6 +54,8 @@ QueueHandle_t referee_send_queue;
 
 apriltap_data_t apriltap_data;
 
+summer_camp_info_t summer_camp_info;
+
 
 
 
@@ -266,6 +268,11 @@ uint16_t referee_data_solve(uint8_t *frame)
             communicate_class_solve();
             break;
         }
+		case GAME_STATUS_CMD_ID:
+		{
+			memcpy(&summer_camp_info,frame+index,sizeof(summer_camp_info_t));
+			referee_send_data(CHASSIS_ODOM_CMD_ID,&summer_camp_info,sizeof(summer_camp_info_t));
+		}
 		
 		//DEBUG recive hehe	
 		case CHASSIS_CTRL_CMD_ID:
