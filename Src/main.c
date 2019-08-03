@@ -266,17 +266,17 @@ int main(void)
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
-  steering_engine pwminit;
-	pwminit.htim=htim4;
-	pwminit.channel=TIM_CHANNEL_1;
-  while(1){
-	  
-	  
-	  change_pwm(&pwminit,0.0);
-	  osDelay(1000);
-	  change_pwm(&pwminit,90.0);
-	  osDelay(1000);
-}	  
+//  steering_engine pwminit;
+//	pwminit.htim=htim4;
+//	pwminit.channel=TIM_CHANNEL_1;
+//  while(1){
+//	  
+//	  
+//	  change_pwm(&pwminit,0.0);
+//	  osDelay(1000);
+//	  change_pwm(&pwminit,90.0);
+//	  osDelay(1000);
+//}	  
 	  
   
 
@@ -310,8 +310,8 @@ int main(void)
 
 
 
-//  osThreadDef(chassis_send, chassis_distance_send_task, osPriorityHigh, 0, 512);
-//  chassis_distance_send_taskHandle = osThreadCreate(osThread(chassis_send), NULL);
+  osThreadDef(chassis_send, chassis_distance_send_task, osPriorityHigh, 0, 512);
+  chassis_distance_send_taskHandle = osThreadCreate(osThread(chassis_send), NULL);
 
 	osThreadDef(referee, referee_task, osPriorityHigh, 0, 256);
   referee_taskHandle = osThreadCreate(osThread(referee), NULL);

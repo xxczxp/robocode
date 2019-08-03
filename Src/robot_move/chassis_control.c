@@ -8,6 +8,7 @@
 #include "protocol.h"
 #include "cmsis_os.h"
 #include  "chassis_behaviour.h"
+#include "referee.h"
 
 
 #define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 1.10537517e-4
@@ -15,9 +16,13 @@
 #define WHEEL_R 0.0072f
 #define ARG 8.09699e-7f
 
+
 PidTypeDef auto_x = {0, 0.5, 7e-10, 0.0005, 1, 1};
 PidTypeDef auto_y = {0, 0.0f, 0.0f, 0.0f, 1, 1};
 PidTypeDef auto_wz = {0, 0.5, 7e-10, 0.005, 1, 1};
+
+extern SemaphoreHandle_t apriltag_handle;
+
 extern uint8_t chassis_odom_pack_solve(
   float x,
   float y,
@@ -34,7 +39,7 @@ location_t target = {0, 0, 0};
 
 
 
-//µ×ÅÌÔË¶¯Êý¾Ý
+//ï¿½ï¿½ï¿½ï¿½ï¿½Ë¶ï¿½ï¿½ï¿½ï¿½ï¿½
  chassis_move_t chassis_move;
  uint8_t usb_tx[128];
 
@@ -46,7 +51,7 @@ void chassis_motor_speed_update(chassis_move_t *chassis_move_update)
     uint8_t i = 0;
     for (i = 0; i < 4; i++)
     {
-        //¸üÐÂµç»úËÙ¶È£¬¼ÓËÙ¶ÈÊÇËÙ¶ÈµÄPIDÎ¢·Ö
+        //ï¿½ï¿½ï¿½Âµï¿½ï¿½ï¿½ï¿½Ù¶È£ï¿½ï¿½ï¿½ï¿½Ù¶ï¿½ï¿½ï¿½ï¿½Ù¶Èµï¿½PIDÎ¢ï¿½ï¿½
         chassis_move_update->motor_chassis[i].speed = CHASSIS_MOTOR_RPM_TO_VECTOR_SEN * chassis_move_update->motor_chassis[i].chassis_motor_measure->speed_rpm;
     }
 }
@@ -57,8 +62,8 @@ void chassis_vector_to_mecanum_wheel_speed(const fp32 vx_set, const fp32 vy_set,
 	wheel_speed[1]=vx_set-vy_set-wz_set*AB;
 	wheel_speed[2]=vx_set+vy_set-wz_set*AB;
 	wheel_speed[3]=-vx_set+vy_set-wz_set*AB;
-    
-    
+
+
 }
 
 float v[4]={0,0,0,0};
@@ -70,7 +75,7 @@ float encode_sign[4];
 fp32 distance_x = 0.0f, distance_y = 0.0f, distance_wz = 0.0f;
 void chassis_distance_calc_task(void const * argument)
 {
-		
+
 		float x,y,theta,s[4];
 	distance_x=0;
 	distance_y=0;
@@ -79,9 +84,17 @@ void chassis_distance_calc_task(void const * argument)
 	encode_sign[1]=1;
 	encode_sign[2]=1;
 	encode_sign[3]=-1;
-    
+
     while(1)
     {
+		chassis_move.vx=(s[0]+ s[1]+s[2]+s[3])/4;
+		chassis_move.vy=(s[0]- s[1]+s[2]-s[3])/4;
+		chassis_move.wz=(s[0]- s[1]-s[2]+s[3])/(4*AB);
+
+		if(xSemaphoreTake(apriltag_handle,0)==pdTRUE)
+		{
+
+		}
 				for(int i=0;i<4;i++){
 			s[i]=chassis_move.motor_chassis[i].speed;
 		}
@@ -90,19 +103,17 @@ void chassis_distance_calc_task(void const * argument)
 			v[i]=(float)chassis_move.motor_chassis[i].chassis_motor_measure->total_ecd;
 					dv[i]=(v[i]-sv[i])*ARG*encode_sign[i];
 		}
-			
+
 			x=(dv[0]+ dv[1]+dv[2]+dv[3])/4;
-			y=(dv[0]- dv[1]+dv[2]-dv[3])/4;   
-			theta=(dv[0]- dv[1]-dv[2]+dv[3])/(4*AB);  
-				
-		chassis_move.vx=(s[0]+ s[1]+s[2]+s[3])/4;
-				chassis_move.vy=(s[0]- s[1]+s[2]-s[3])/4;   
-				chassis_move.wz=(s[0]- s[1]-s[2]+s[3])/(4*AB); 
+			y=(dv[0]- dv[1]+dv[2]-dv[3])/4;
+			theta=(dv[0]- dv[1]-dv[2]+dv[3])/(4*AB);
+
+
 				distance_x+=(arm_cos_f32(distance_wz)*x-arm_sin_f32(distance_wz)*y);
 				distance_y+=(arm_sin_f32(distance_wz)*x+arm_cos_f32(distance_wz)*y);
 				distance_wz+=theta;
-								
-		
+
+
         osDelay(10);
     }
 }
@@ -110,15 +121,15 @@ void chassis_distance_calc_task(void const * argument)
 
 void chassis_distance_send_task(void const * argument)
 {
-    
-    
+
+
     while(1)
     {
         uint8_t send_len;
         //send_len = chassis_odom_pack_solve( distance_x, distance_y, distance_wz, chassis_move.vx, chassis_move.vy, chassis_move.wz, chassis_move.chassis_gyro_z, chassis_move.chassis_yaw);
         osDelay(10);
     }
-    
+
 }
 
 
@@ -141,12 +152,12 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
 {
     if (vx_set == NULL || vy_set == NULL || wz_set == NULL || chassis_move_rc_to_vector == NULL)
     {
-				
+
         return;
     }
-		
-//±ÕÎ»ÖÃ»·
-		
+
+//ï¿½ï¿½Î»ï¿½Ã»ï¿½
+
 	current.x = distance_x;
 	current.y = distance_y;
 	current.w = distance_wz;
@@ -163,32 +174,27 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
 
 void chassis_PID_init(void)
 {
-    //µ×ÅÌËÙ¶È»·pidÖµ
+    //ï¿½ï¿½ï¿½ï¿½ï¿½Ù¶È»ï¿½pidÖµ
     const static fp32 motor_speed_pid[3] = {M3505_MOTOR_SPEED_PID_KP, M3505_MOTOR_SPEED_PID_KI, M3505_MOTOR_SPEED_PID_KD};
 
     const static fp32 chassis_rotation_pid[3] = {CHASSIS_ROTATION_PID_KP, CHASSIS_ROTATION_PID_KI, CHASSIS_ROTATION_PID_KD};
-    //µ×ÅÌÐý×ª»·pidÖµ
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½pidÖµ
     const static fp32 chassis_angle_pid[3] = {CHASSIS_ANGLE_PID_KP, CHASSIS_ANGLE_PID_KI, CHASSIS_ANGLE_PID_KD};
 
     uint8_t i;
 
 
-    //³õÊ¼»¯PID ÔË¶¯
+    //ï¿½ï¿½Ê¼ï¿½ï¿½PID ï¿½Ë¶ï¿½
     for (i = 0; i < 4; i++)
     {
         PID_Init(&chassis_move.motor_speed_pid[i], PID_POSITION, motor_speed_pid, M3505_MOTOR_SPEED_PID_MAX_OUT, M3505_MOTOR_SPEED_PID_MAX_IOUT);
     }
 
 
-    //³õÊ¼»¯Ðý×ªPID
+    //ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½×ªPID
     PID_Init(&chassis_move.chassis_rotation_pid, PID_POSITION, chassis_rotation_pid, CHASSIS_ROTATION_PID_MAX_OUT, CHASSIS_ROTATION_PID_MAX_IOUT);
 
     PID_Init(&chassis_move.chassis_angle_pid, PID_POSITION, chassis_angle_pid, CHASSIS_ANGLE_PID_MAX_OUT, CHASSIS_ANGLE_PID_MAX_IOUT);
 
 
 }
-
-
-
-
-

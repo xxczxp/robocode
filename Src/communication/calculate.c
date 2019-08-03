@@ -5,6 +5,7 @@
 #include "protocol.h"
 #include "fifo.h"
 #include "cmsis_os.h"
+#include "semphr.h"
 
 /*
 ** Descriptions: append CRC16 to the end of data
