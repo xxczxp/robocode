@@ -1,7 +1,6 @@
 #include "main.h"
 #include "stm32_hal_legacy.h"
 
-//#define __HAl_TIM_SetCompare
 extern TIM_HandleTypeDef htim4;
 
 void set_pwm (void){
@@ -19,6 +18,6 @@ while(1){
 	__HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_1,2500);
 	}
 	osDelay(1000);
-}
+	}
 
 }

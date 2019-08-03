@@ -116,9 +116,9 @@ void PID_Calc_L(PidTypeDef *pid_x, PidTypeDef *pid_y, location_t *target, locati
 		MoveV.element[1][0] =  target -> y  - current -> y;
 		
 		MatMul(&RotationT, &MoveV, &Tresult);
-		float transform_x, transform_y;
-		transform_x = Tresult.element[0][0];
-		transform_y = Tresult.element[1][0];
+//		float transform_x, transform_y;
+//		transform_x = Tresult.element[0][0];
+//		transform_y = Tresult.element[1][0];
 		
 		result[0] = PID_Calc(pid_x, current -> x, target -> x);
     result[1] = PID_Calc(pid_y, current -> y, target -> y);

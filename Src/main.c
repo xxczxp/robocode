@@ -107,7 +107,7 @@ osThreadId chassis_taskHandle;
 osThreadId chassis_distance_taskHandle;
 osThreadId referee_taskHandle;
 osThreadId chassis_distance_send_taskHandle;
-
+extern void set_pwm( void);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -172,6 +172,11 @@ void USART2_IRQHandler(void)
   * @brief  The application entry point.
   * @retval int
   */
+
+
+
+
+	
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -236,8 +241,9 @@ int main(void)
     HAL_Delay(137);
     power_ctrl_on(3);
     HAL_Delay(137);
-
-//		set_pwm ();
+		
+		  set_pwm ();
+		
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -315,6 +321,10 @@ int main(void)
   * @brief System Clock Configuration
   * @retval None
   */
+
+
+
+	
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
