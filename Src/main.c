@@ -179,7 +179,6 @@ void USART2_IRQHandler(void)
 
 float a = 0;
 
-float i;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -247,9 +246,9 @@ int main(void)
 		pwm_all_init();
 	steering_engine test = {A};
   /* USER CODE END 1 */
-while(1){
- change_pwm(&test, i);
-}
+//while(1){
+// change_pwm(&test, i);
+//}
 
   /* USER CODE END 2 */
 

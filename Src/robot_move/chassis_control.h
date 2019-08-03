@@ -1,6 +1,7 @@
 #ifndef CHASSIS_CONTROL_H
 #define CHASSIS_CONTROL_H
 #include "struct_typedef.h"
+#include "referee.h"
 
 
 
@@ -28,7 +29,6 @@
 #define CHASSIS_ANGLE_PID_KD 0.0f
 #define CHASSIS_ANGLE_PID_MAX_OUT 6.0f
 #define CHASSIS_ANGLE_PID_MAX_IOUT 0.2f
-
 
 typedef struct{
 float x;
