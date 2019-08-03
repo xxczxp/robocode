@@ -36,4 +36,11 @@ float y;
 float w;
 }location_t;
 
+typedef enum{
+	MOVE_CMD,
+}AUTO_CMD;
+
+typedef struct{
+	AUTO_CMD cmd;
+	}auto_pack_t;
 #endif

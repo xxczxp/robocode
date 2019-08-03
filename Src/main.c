@@ -157,17 +157,7 @@ SemaphoreHandle_t apriltag_handle;
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-void USART2_IRQHandler(void)
-{
-    if(__HAL_UART_GET_FLAG(&huart2, UART_FLAG_IDLE) != RESET)
-    {
-        __HAL_UART_CLEAR_IDLEFLAG(&huart2);
-    }
-    else if(__HAL_UART_GET_FLAG(&huart2, UART_FLAG_TC) != RESET)
-    {
-        __HAL_UART_CLEAR_FLAG(&huart2, UART_FLAG_TC);
-    }
-}
+
 
 /* USER CODE END 0 */
 

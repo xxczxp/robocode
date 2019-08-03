@@ -10,6 +10,12 @@
 #include "freertos.h"
 #include "semphr.h"
 #include "usbd_cdc_if.h"
+#include "bsp_usart.h"
+#include "remote_control.h"
+
+#define USART2_BUF_RX_LEN 256
+
+uint8_t usart2_rx_buf[2][USART2_BUF_RX_LEN];
 
 //计算式输入数据
 extern communicate_class_input_data_t communicate_input_data;
@@ -17,6 +23,7 @@ extern communicate_class_input_data_t communicate_input_data;
 extern communicate_class_output_data_t communicate_output_data;
 extern void usb_receiver(uint8_t *buf,uint32_t len);
 
+extern UART_HandleTypeDef huart2; 
 //USB接收FIFO初始化
 void usb_fifo_init(void);
 
@@ -54,7 +61,7 @@ apriltap_data_t apriltap_data;
 void referee_task(void const * argument)
 {
 	
-	
+	usart2_dma_init(usart2_rx_buf[0],usart2_rx_buf[1],USART2_BUF_RX_LEN);
     usb_fifo_init();
 		
     
@@ -79,6 +86,45 @@ void referee_send_task(void const * argument)
         }
     }
 }
+
+
+//usart2 
+void USART2_IRQHandler(void)
+{
+	
+	static uint16_t this_time_rx_len;
+	if(__HAL_UART_GET_FLAG(&huart2, UART_FLAG_IDLE) != RESET)
+    {
+		__HAL_UART_CLEAR_IDLEFLAG(&huart2);
+		if ((DMA1_Stream5->CR & DMA_SxCR_CT) != 0)
+        {
+            DMA1_Stream5->CR &= ~(1 << 0);
+            this_time_rx_len = USART2_BUF_RX_LEN - DMA2_Stream2->NDTR;
+            DMA1_Stream5->NDTR = USART2_BUF_RX_LEN;
+            DMA1_Stream5->CR &= ~(DMA_SxCR_CT);
+            DMA1_Stream5->CR |= 1 << 0;
+
+            fifo_s_puts(&usb_fifo,(char*)usart2_rx_buf[1],this_time_rx_len);
+        }
+        else
+        {
+            DMA1_Stream5->CR &= ~(1 << 0);
+            this_time_rx_len = USART2_BUF_RX_LEN - DMA2_Stream2->NDTR;
+            DMA1_Stream5->NDTR = USART2_BUF_RX_LEN;
+            DMA1_Stream5->CR |= DMA_SxCR_CT;
+            DMA1_Stream5->CR |= 1 << 0;
+
+            fifo_s_puts(&usb_fifo,(char*)usart2_rx_buf[0],this_time_rx_len);
+        }
+		
+	}
+	else if(__HAL_UART_GET_FLAG(&huart2, UART_FLAG_TC) != RESET)
+    {
+        __HAL_UART_CLEAR_FLAG(&huart2, UART_FLAG_TC);
+    }
+	
+}
+
 //USB FIFO初始化函数
 void usb_fifo_init(void)
 {

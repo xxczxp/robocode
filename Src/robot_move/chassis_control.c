@@ -122,7 +122,7 @@ void chassis_distance_calc_task(void const * argument)
 				distance_x=distance_wz*0.5+apriltap_data.wz*0.5;
 			}
 			
-			SemaphoreGive(apriltag_handle);
+			xSemaphoreGive(apriltag_handle);
 		}
 			
 
