@@ -1,6 +1,7 @@
 #include "chassis_control.h"
 #include "chassis_task.h"
 #include "PID.h"
+#include "math.h"
 
 #include "main.h"
 #include "arm_math.h"
@@ -15,6 +16,7 @@
 #define AB 0.25f
 #define WHEEL_R 0.0072f
 #define ARG 8.09699e-7f
+#define Pi acos(-1)
 
 
 PidTypeDef auto_x = {0, 0.5, 7e-10, 0.0005, 1, 1};
@@ -156,15 +158,48 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
         return;
     }
 
-//��λ�û�
+//close position loop
 
 	current.x = distance_x;
 	current.y = distance_y;
 	current.w = distance_wz;
+	
+		double dis=sqrt(distance_x*distance_x+distance_y*distance_y);
+	  double right_degree  = acos(distance_x/dis);
+		if(asin(distance_y/dis)<0)
+			right_degree=2*Pi-right_degree;
+		
+	double adjustment_dis_degee =distance_wz;
+		
+//	if (current.w >Pi){
+//		adjustment_dis_degee = current.w - Pi;
+//	}
+//	else if (current.w < -Pi){
+//	  adjustment_dis_degee = current.w + Pi;
+//	}
+//	else {
+//	adjustment_dis_degee = current.w;
+//	}
+	
+	double delta_degree = right_degree-adjustment_dis_degee;
+		while(delta_degree>PI)
+			delta_degree-=2*Pi;
+		while(delta_degree<-Pi)
+			delta_degree+=2*Pi;
+		
 	PID_Calc_L(&auto_x, &auto_y, &target, &current);
-	*vx_set =result[0];
-	*vy_set =result[1];
-		*wz_set=PID_Calc(&auto_wz,current.w,target.w);
+	*vx_set = result[0];
+	*vy_set = 0.6;
+	*wz_set = PID_Calc(&auto_wz, current.w,current.w+delta_degree);
+//		double revise_degree =  
+		
+		
+		
+		
+//	PID_Calc_L(&auto_x, &auto_y, &target, &current);
+//	*vx_set =result[0];
+//	*vy_set =result[1];
+//		*wz_set=PID_Calc(&auto_wz,current.w,target.w);
 //	*wz_set =PID_Calc(chassis_move_rc_to_vector ->motor_speed_pid, chassis_move.vx, target.w);
 //		*vx_set =PID_Calc(chassis_move_rc_to_vector ->motor_speed_pid, chassis_move.vy, target.w);
 //		*vy_set =PID_Calc(chassis_move_rc_to_vector ->motor_speed_pid, chassis_move.wz, target.w);
