@@ -1,3 +1,6 @@
+//my recive 
+#define RECIVE_TERM_SIZE 129
+#define RECIVE_BUFFER_SIZE 5
 
 #ifndef REFEREE_H
 #define REFEREE_H
@@ -8,9 +11,7 @@
 #include "cmsis_os.h"
 #include "usb_device.h"
 
-//my recive 
-#define RECIVE_TERM_SIZE 129
-#define RECIVE_BUFFER_SIZE 5
+
 
 typedef float auto_t;
 
@@ -28,6 +29,7 @@ typedef struct {
 
 extern void referee_task(void const * argument);
 extern SemaphoreHandle_t apriltag_handle;
+extern apriltap_data_t apriltap_data;
 
 extern uint16_t referee_data_solve(uint8_t *frame);
 
