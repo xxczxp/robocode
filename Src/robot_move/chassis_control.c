@@ -167,7 +167,12 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
 
         return;
     }
-
+	
+	*vx_set=ch_auto_control_data.vx;
+	*vy_set=ch_auto_control_data.vx;
+	*wz_set=ch_auto_control_data.vw;
+	return;
+	
 //close position loop
 
 	current.x = distance_x;
