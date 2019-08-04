@@ -76,7 +76,7 @@ typedef struct
 {
   struct castle_energy
   {
-    uint8_t energy[2];
+    uint8_t energy[2];//[0]red    [1]blue
   }castle_energy[7];
 
   struct region_occupy

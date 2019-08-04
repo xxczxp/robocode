@@ -54,7 +54,7 @@ QueueHandle_t referee_send_queue;
 
 apriltap_data_t apriltap_data;
 
-summer_camp_info_t summer_camp_info;
+summer_camp_info_t field_info;
 
 
 
@@ -270,8 +270,8 @@ uint16_t referee_data_solve(uint8_t *frame)
         }
 		case GAME_STATUS_CMD_ID:
 		{
-			memcpy(&summer_camp_info,frame+index,sizeof(summer_camp_info_t));
-			referee_send_data(GAME_STATUS_CMD_ID,&summer_camp_info,sizeof(summer_camp_info_t));
+			memcpy(&field_info,frame+index,sizeof(summer_camp_info_t));
+			referee_send_data(GAME_STATUS_CMD_ID,&field_info,sizeof(summer_camp_info_t));
 		}
 		
 		//DEBUG recive hehe	
