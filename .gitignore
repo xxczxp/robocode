@@ -1,4 +1,4 @@
-﻿# reference to https://blog.csdn.net/u010160335/article/details/80068175
+# reference to https://blog.csdn.net/u010160335/article/details/80068175
 # reference to Keil->help->µVision User's Guide->Appendix->B. File Types
 
 # Project Files
@@ -80,6 +80,6 @@ PROJECT_PROJ.XSD
 *.SVD
 *.XML
 Src/communication/.DS_Store
-MDK-ARM/HAL_INFANTRY.uvprojx
-MDK-ARM/HAL_INFANTRY.uvoptx
+# MDK-ARM/HAL_INFANTRY.uvprojx
+# MDK-ARM/HAL_INFANTRY.uvoptx
 MDK-ARM/RTE/RTE_Components.h
