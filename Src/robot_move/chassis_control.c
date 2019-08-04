@@ -169,7 +169,7 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
     }
 	
 	*vx_set=ch_auto_control_data.vx;
-	*vy_set=ch_auto_control_data.vx;
+	*vy_set=ch_auto_control_data.vy;
 	*wz_set=ch_auto_control_data.vw;
 	return;
 	
