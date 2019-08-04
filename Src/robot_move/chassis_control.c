@@ -138,7 +138,7 @@ void chassis_distance_send_task(void const * argument)
     while(1)
     {
         uint8_t send_len;
-        //send_len = chassis_odom_pack_solve( distance_x, distance_y, distance_wz, chassis_move.vx, chassis_move.vy, chassis_move.wz, chassis_move.chassis_gyro_z, chassis_move.chassis_yaw);
+        send_len = chassis_odom_pack_solve( distance_x, distance_y, distance_wz, chassis_move.vx, chassis_move.vy, chassis_move.wz, chassis_move.chassis_gyro_z, chassis_move.chassis_yaw);
         osDelay(10);
     }
 
@@ -169,7 +169,7 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
     }
 	
 	*vx_set=ch_auto_control_data.vx;
-	*vy_set=ch_auto_control_data.vx;
+	*vy_set=ch_auto_control_data.vy;
 	*wz_set=ch_auto_control_data.vw;
 	return;
 	
