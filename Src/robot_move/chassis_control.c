@@ -1,4 +1,4 @@
-#include "chassis_control.h"
+﻿#include "chassis_control.h"
 #include "chassis_task.h"
 #include "PID.h"
 #include "math.h"
@@ -10,6 +10,7 @@
 #include "cmsis_os.h"
 #include  "chassis_behaviour.h"
 #include "referee.h"
+#include "semphr.h"
 
 
 #define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 1.10537517e-4
@@ -45,8 +46,13 @@ location_t target = {0, 0, 0};
  chassis_move_t chassis_move;
  uint8_t usb_tx[128];
 
+
   // auto_control unpacked data
 extern chassis_ctrl_info_t ch_auto_control_data;
+
+//real auto_control
+QueueHandle_t auto_queue;
+void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector);
 
 void chassis_motor_speed_update(chassis_move_t *chassis_move_update)
 {
@@ -74,6 +80,7 @@ float dv[4]={0,0,0,0};
 
 float encode_sign[4];
 
+
 fp32 distance_x = 0.0f, distance_y = 0.0f, distance_wz = 0.0f;
 void chassis_distance_calc_task(void const * argument)
 {
@@ -93,10 +100,7 @@ void chassis_distance_calc_task(void const * argument)
 		chassis_move.vy=(s[0]- s[1]+s[2]-s[3])/4;
 		chassis_move.wz=(s[0]- s[1]-s[2]+s[3])/(4*AB);
 
-		if(xSemaphoreTake(apriltag_handle,0)==pdTRUE)
-		{
-
-		}
+		
 				for(int i=0;i<4;i++){
 			s[i]=chassis_move.motor_chassis[i].speed;
 		}
@@ -110,11 +114,22 @@ void chassis_distance_calc_task(void const * argument)
 			y=(dv[0]- dv[1]+dv[2]-dv[3])/4;
 			theta=(dv[0]- dv[1]-dv[2]+dv[3])/(4*AB);
 
-
+			
 				distance_x+=(arm_cos_f32(distance_wz)*x-arm_sin_f32(distance_wz)*y);
 				distance_y+=(arm_sin_f32(distance_wz)*x+arm_cos_f32(distance_wz)*y);
 				distance_wz+=theta;
-
+		if(xSemaphoreTake(apriltag_handle,0)==pdTRUE)
+		{
+			if(apriltap_data.is_new==1){
+				apriltap_data.is_new=0;
+				distance_x=distance_x*0.5+apriltap_data.x*0.5;
+				distance_x=distance_y*0.5+apriltap_data.y*0.5;
+				distance_x=distance_wz*0.5+apriltap_data.wz*0.5;
+			}
+			
+			xSemaphoreGive(apriltag_handle);
+		}
+			
 
         osDelay(10);
     }
@@ -161,15 +176,20 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
 
 	current.x = distance_x;
 	current.y = distance_y;
-	current.w = distance_wz;
+	current.w = 0;
 	
+		
 		double dis=sqrt(distance_x*distance_x+distance_y*distance_y);
 	  double right_degree  = acos(distance_x/dis);
 		if(asin(distance_y/dis)<0)
 			right_degree=2*Pi-right_degree;
 		
+		target.x=3;
+		
+		
 	double adjustment_dis_degee =distance_wz;
 		
+
 	double delta_degree = right_degree-adjustment_dis_degee;
 		while(delta_degree>PI)
 			delta_degree-=2*Pi;
@@ -177,21 +197,54 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
 			delta_degree+=2*Pi;
 		
 	PID_Calc_L(&auto_x, &auto_y, &target, &current);
-	*vx_set = result[0];
+	*vx_set = 0.5*PID_Calc(&auto_x,dis,target.x);
 	*vy_set = 0.6;
-	*wz_set = PID_Calc(&auto_wz, current.w,current.w+delta_degree);
-//		double revise_degree =  
-		
-		
-		
-		
-//	PID_Calc_L(&auto_x, &auto_y, &target, &current);
-//	*vx_set =result[0];
-//	*vy_set =result[1];
-//		*wz_set=PID_Calc(&auto_wz,current.w,target.w);
-//	*wz_set =PID_Calc(chassis_move_rc_to_vector ->motor_speed_pid, chassis_move.vx, target.w);
-//		*vx_set =PID_Calc(chassis_move_rc_to_vector ->motor_speed_pid, chassis_move.vy, target.w);
-//		*vy_set =PID_Calc(chassis_move_rc_to_vector ->motor_speed_pid, chassis_move.wz, target.w);
+	*wz_set = PID_Calc(&auto_wz, distance_wz,distance_wz+delta_degree);
+	
+		// step_auto_control(vx_set, vy_set, wz_set, chassis_move_rc_to_vector);
+	
+}
+
+int state=CMD_GET;
+void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector){
+	static auto_pack_t pack;
+	switch(state){
+		case CMD_GET:
+		{
+			if(xQueueReceive(auto_queue,&pack,0)==pdPASS)
+			{
+				if(pack.cmd==MOVE_CMD)
+					state=MOVE;
+				else if(pack.cmd==PUT_BALL_CMD){
+					state=PUT_BALL;
+				}
+			}
+			*vx_set=0;
+			*vy_set = 0;
+			*wz_set = 0;
+			
+		}break;
+		case MOVE:
+		{
+			if((abs(current.x-distance_x)<X_PASS_LIMIT)&&(abs(current.y-distance_y)<Y_PASS_LIMIT) && (abs(current.w-distance_wz)<WZ_PASS_LIMIT))
+			{
+				
+				state=CMD_GET;
+				*vx_set=0;
+				*vy_set = 0;
+				*wz_set = 0;
+			}
+			else{
+				current.x=distance_x;
+				current.y=distance_y;
+				current.w=distance_wz;
+				PID_Calc_L(&auto_x, &auto_y, &pack.target, &current);
+				*vx_set =result[0];
+				*vy_set =result[1];
+				*wz_set=PID_Calc(&auto_wz,current.w,target.w);
+			}
+		}break;
+	}
 }
 
 

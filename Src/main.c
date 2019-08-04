@@ -96,6 +96,7 @@ DMA_HandleTypeDef hdma_usart2_tx;
 DMA_HandleTypeDef hdma_usart6_rx;
 DMA_HandleTypeDef hdma_usart6_tx;
 
+extern QueueHandle_t auto_queue;
 extern QueueHandle_t referee_send_queue;
 extern TimerHandle_t referee_send_handle;
 
@@ -158,17 +159,7 @@ SemaphoreHandle_t apriltag_handle;
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-void USART2_IRQHandler(void)
-{
-    if(__HAL_UART_GET_FLAG(&huart2, UART_FLAG_IDLE) != RESET)
-    {
-        __HAL_UART_CLEAR_IDLEFLAG(&huart2);
-    }
-    else if(__HAL_UART_GET_FLAG(&huart2, UART_FLAG_TC) != RESET)
-    {
-        __HAL_UART_CLEAR_FLAG(&huart2, UART_FLAG_TC);
-    }
-}
+
 
 /* USER CODE END 0 */
 
@@ -179,7 +170,6 @@ void USART2_IRQHandler(void)
 
 
 float a = 0;
-
 
 int main(void)
 {
@@ -249,7 +239,6 @@ int main(void)
 		
   /* USER CODE END 1 */
 
-
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -283,7 +272,7 @@ int main(void)
   
 
 	referee_send_queue = xQueueCreate(RECIVE_BUFFER_SIZE, RECIVE_TERM_SIZE);
-
+	auto_queue = xQueueCreate(AUTO_RECIVE_BUFFER_SIZE, sizeof(auto_pack_t));
 
 	xTaskCreate((TaskFunction_t)referee_send_task, "send_task", 256, NULL, osPriorityHigh, &referee_send_handle);
 

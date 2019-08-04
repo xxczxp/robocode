@@ -1,7 +1,15 @@
+
+#define AUTO_RECIVE_BUFFER_SIZE 30
+
+#define X_PASS_LIMIT 0.05
+#define Y_PASS_LIMIT 0.05
+#define WZ_PASS_LIMIT 0.05
+
 #ifndef CHASSIS_CONTROL_H
 #define CHASSIS_CONTROL_H
 #include "struct_typedef.h"
-
+#include "referee.h"
+#include "chassis_task.h"
 
 
 //底盘电机速度环PID
@@ -29,11 +37,32 @@
 #define CHASSIS_ANGLE_PID_MAX_OUT 6.0f
 #define CHASSIS_ANGLE_PID_MAX_IOUT 0.2f
 
-
 typedef struct{
 float x;
 float y;
 float w;
 }location_t;
+
+typedef enum{
+	MOVE_CMD,
+	PUT_BALL_CMD
+}AUTO_CMD;
+
+typedef struct{
+	int cmd;//AUTO_CMD
+	location_t target;
+	}auto_pack_t;
+
+	
+extern QueueHandle_t auto_queue;
+	
+typedef enum{
+	CMD_GET,
+	MOVE,
+	PUT_BALL,
+	STOP
+}STEP_AUTO_STATE;
+	
+extern void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector);
 
 #endif
