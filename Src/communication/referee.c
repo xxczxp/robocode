@@ -271,7 +271,7 @@ uint16_t referee_data_solve(uint8_t *frame)
 		case GAME_STATUS_CMD_ID:
 		{
 			memcpy(&summer_camp_info,frame+index,sizeof(summer_camp_info_t));
-			referee_send_data(CHASSIS_ODOM_CMD_ID,&summer_camp_info,sizeof(summer_camp_info_t));
+			referee_send_data(GAME_STATUS_CMD_ID,&summer_camp_info,sizeof(summer_camp_info_t));
 		}
 		
 		//DEBUG recive hehe	
