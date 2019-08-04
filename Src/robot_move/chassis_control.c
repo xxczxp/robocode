@@ -1,4 +1,4 @@
-﻿#include "chassis_control.h"
+#include "chassis_control.h"
 #include "chassis_task.h"
 #include "PID.h"
 #include "math.h"
@@ -11,7 +11,7 @@
 #include  "chassis_behaviour.h"
 #include "referee.h"
 #include "semphr.h"
-
+#include "kalman.h"
 
 #define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 1.10537517e-4
 #define AB 0.25f
@@ -80,11 +80,29 @@ float dv[4]={0,0,0,0};
 
 float encode_sign[4];
 
+kalman_filter_t pos_kalman[3];
+kalman_filter_t wz_feiman[3];
+
+extern rm_imu_data_t rm_imu_data;
+float imu_last;
+#define ODOM_V 0.001
+#define APRIL_V 0.0005
+#define GYRO_V 0.005
 
 fp32 distance_x = 0.0f, distance_y = 0.0f, distance_wz = 0.0f;
 void chassis_distance_calc_task(void const * argument)
 {
-
+	for(int i=0;i<3;i++){
+		pos_kalman[i].v_noise_pre=ODOM_V;
+		pos_kalman[i].v_noise_get=APRIL_V;
+		pos_kalman[i].v_pre=0;
+	}
+	pos_kalman[2].v_noise_pre=0.0;
+	
+	
+	
+	
+	
 		float x,y,theta,s[4];
 	distance_x=0;
 	distance_y=0;
