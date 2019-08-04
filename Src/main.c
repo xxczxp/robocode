@@ -22,8 +22,9 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "usb_device.h"
+#include "A_STAR.h"
 
-/* Private includes ----------------------------------------------------------*/
+/* Private includes ---------3-------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "calibrate_task.h"
 #include "Detect_Task.h"
@@ -179,11 +180,12 @@ void USART2_IRQHandler(void)
 
 float a = 0;
 
-float i;
+
 int main(void)
 {
+	A_star();
   /* USER CODE BEGIN 1 */
-
+ 
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -244,12 +246,9 @@ int main(void)
     power_ctrl_on(3);
     HAL_Delay(137);
 
-		pwm_all_init();
-	steering_engine test = {A};
+		
   /* USER CODE END 1 */
-while(1){
- change_pwm(&test, i);
-}
+
 
   /* USER CODE END 2 */
 

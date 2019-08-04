@@ -158,7 +158,6 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
         return;
     }
 
-//close position loop
 
 	current.x = distance_x;
 	current.y = distance_y;
@@ -171,16 +170,6 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
 		
 	double adjustment_dis_degee =distance_wz;
 		
-//	if (current.w >Pi){
-//		adjustment_dis_degee = current.w - Pi;
-//	}
-//	else if (current.w < -Pi){
-//	  adjustment_dis_degee = current.w + Pi;
-//	}
-//	else {
-//	adjustment_dis_degee = current.w;
-//	}
-	
 	double delta_degree = right_degree-adjustment_dis_degee;
 		while(delta_degree>PI)
 			delta_degree-=2*Pi;

@@ -84,20 +84,7 @@ void PID_Calc_L(PidTypeDef *pid_x, PidTypeDef *pid_y, location_t *target, locati
     if ((pid_x == NULL || pid_y == NULL) || (pid_x->mode == PID_LOCATION && pid_y->mode == PID_LOCATION ))
     {
 //        printf("pid is NULL !");
-    }
-
-//    pid_x->error[2] = pid_x->error[1];
-//    pid_x->error[1] = pid_x->error[0];
-//    pid_x->set = target -> x;
-//    pid_x->fdb = current -> x;
-//    pid_x->error[0] = target -> x  - current -> x;
-//		
-//		pid_y->error[2] = pid_y->error[1];
-//    pid_y->error[1] = pid_y->error[0];
-//    pid_y->set = target -> y;
-//    pid_y->fdb = current -> y;
-//    pid_y->error[0] = target -> y  - current -> y;
-    
+    }    
 		Mat RotationT ;
 		Mat MoveV ;
 		Mat Tresult ; 
