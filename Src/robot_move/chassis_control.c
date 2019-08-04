@@ -1,4 +1,4 @@
-﻿#include "chassis_control.h"
+#include "chassis_control.h"
 #include "chassis_task.h"
 #include "PID.h"
 #include "math.h"
@@ -11,7 +11,7 @@
 #include  "chassis_behaviour.h"
 #include "referee.h"
 #include "semphr.h"
-
+#include "matrix.h"
 
 #define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 1.10537517e-4
 #define AB 0.25f
@@ -80,11 +80,33 @@ float dv[4]={0,0,0,0};
 
 float encode_sign[4];
 
+#define A_COV 0.0005f
+#define O_COV 0.0005f
+
+matrix apriltag_cov;
+matrix odom_noise_cov;
+matrix odom_cov;
 
 fp32 distance_x = 0.0f, distance_y = 0.0f, distance_wz = 0.0f;
 void chassis_distance_calc_task(void const * argument)
 {
-
+	double use_data[10][m_size(3,3)];
+	
+	matrix_init(apriltag_cov,3,3,use_data[0]);
+	matrix_init(odom_noise_cov,3,3,use_data[1]);
+	matrix_init(odom_cov,3,3,use_data[2]);
+	dex(apriltag_cov,0,0)=A_COV;
+	dex(apriltag_cov,1,1)=A_COV;
+	dex(apriltag_cov,2,2)=A_COV;
+	dex(odom_noise_cov,0,0)=O_COV;
+	dex(odom_noise_cov,1,1)=O_COV;
+	dex(odom_noise_cov,2,2)=O_COV;
+	dex(odom_cov,0,0)=O_COV;
+	dex(odom_cov,1,1)=O_COV;
+	dex(odom_cov,2,2)=O_COV;
+	
+	
+	
 		float x,y,theta,s[4];
 	distance_x=0;
 	distance_y=0;
