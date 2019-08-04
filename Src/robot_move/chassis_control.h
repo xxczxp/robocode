@@ -9,7 +9,7 @@
 #define CHASSIS_CONTROL_H
 #include "struct_typedef.h"
 #include "referee.h"
-#include "chassis_task.h"
+
 
 
 //底盘电机速度环PID
@@ -63,6 +63,6 @@ typedef enum{
 	STOP
 }STEP_AUTO_STATE;
 	
-extern void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector);
+
 
 #endif

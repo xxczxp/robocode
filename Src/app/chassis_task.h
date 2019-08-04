@@ -137,6 +137,7 @@ typedef struct
 
 } chassis_move_t;
 
+extern void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector);
 extern void chassis_task(void const *pvParameters);
 extern void chassis_rc_to_control_vector(fp32 *vx_set, fp32 *vy_set, chassis_move_t *chassis_move_rc_to_vector);
 
