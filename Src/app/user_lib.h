@@ -47,6 +47,8 @@ extern fp32 loop_fp32_constrain(fp32 Input, fp32 minValue, fp32 maxValue);
 //角度 °限幅 180 ~ -180
 extern fp32 theta_format(fp32 Ang);
 
+extern float sdiv(float a,float b);
+
 //弧度格式化为-PI~PI
 #define rad_format(Ang) loop_fp32_constrain((Ang), -PI, PI)
 

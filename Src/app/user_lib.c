@@ -186,3 +186,9 @@ fp32 theta_format(fp32 Ang)
 {
     return loop_fp32_constrain(Ang, -180.0f, 180.0f);
 }
+
+float sdiv(float a,float b){
+	if(b==0.0)
+		return 0;
+	else return a/b;
+}

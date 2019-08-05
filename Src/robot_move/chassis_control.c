@@ -94,6 +94,51 @@ const float *imu_angle;
 #define ANGLE_USE 0
 
 fp32 distance_x = 0.0f, distance_y = 0.0f, distance_wz = 0.0f;
+
+void angle_sim(const float target,float *var){
+	while((*var-target)>Pi)
+		*var-=2*Pi;
+	while((*var-target)<-Pi)
+		*var+=2*Pi;
+	
+}
+
+void kalman_use(void){
+	if(xSemaphoreTake(apriltag_handle,0)==pdTRUE)
+		{
+			if(apriltap_data.is_new==1){
+				apriltap_data.is_new=0;
+//				distance_x=distance_x*0.5+apriltap_data.x*0.5;
+//				distance_x=distance_y*0.5+apriltap_data.y*0.5;
+//				distance_x=distance_wz*0.5+apriltap_data.wz*0.5;
+				angle_sim(imu_angle[ANGLE_USE]-imu_last+distance_wz,&distance_wz);
+				distance_wz=feiman_update(&wz_feiman,distance_wz,imu_angle[ANGLE_USE]-imu_last+distance_wz);
+				distance_x=kalman_update(&pos_kalman[0],distance_x,apriltap_data.x);
+				distance_y=kalman_update(&pos_kalman[1],distance_y,apriltap_data.y);
+				angle_sim(apriltap_data.wz,&distance_wz);
+				distance_wz=kalman_update(&pos_kalman[2],distance_wz,apriltap_data.wz);
+
+			}
+			
+			else{
+				pos_kalman[0].v_pre+=pos_kalman[0].v_noise_pre;
+			pos_kalman[1].v_pre+=pos_kalman[1].v_noise_pre;
+				angle_sim(imu_angle[ANGLE_USE]-imu_last+distance_wz,&distance_wz);
+			distance_wz=feiman_update(&wz_feiman,distance_wz,imu_angle[ANGLE_USE]-imu_last+distance_wz);
+				
+			}
+			
+			xSemaphoreGive(apriltag_handle);
+		}
+		else {
+			pos_kalman[0].v_pre+=pos_kalman[0].v_noise_pre;
+			pos_kalman[1].v_pre+=pos_kalman[1].v_noise_pre;
+			angle_sim(imu_angle[ANGLE_USE]-imu_last+distance_wz,&distance_wz);
+			distance_wz=feiman_update(&wz_feiman,distance_wz,imu_angle[ANGLE_USE]-imu_last+distance_wz);
+		}
+}
+
+
 void chassis_distance_calc_task(void const * argument)
 {
 	for(int i=0;i<3;i++){
@@ -144,37 +189,12 @@ void chassis_distance_calc_task(void const * argument)
 				distance_x+=(arm_cos_f32(distance_wz)*x-arm_sin_f32(distance_wz)*y);
 				distance_y+=(arm_sin_f32(distance_wz)*x+arm_cos_f32(distance_wz)*y);
 				distance_wz+=theta;
-		if(xSemaphoreTake(apriltag_handle,0)==pdTRUE)
-		{
-			if(apriltap_data.is_new==1){
-				apriltap_data.is_new=0;
-//				distance_x=distance_x*0.5+apriltap_data.x*0.5;
-//				distance_x=distance_y*0.5+apriltap_data.y*0.5;
-//				distance_x=distance_wz*0.5+apriltap_data.wz*0.5;
-				distance_wz=feiman_update(&wz_feiman,distance_wz,distance_wz+imu_angle[ANGLE_USE]-imu_last+distance_wz);
-				distance_x=kalman_update(&pos_kalman[0],distance_x,apriltap_data.x);
-				distance_y=kalman_update(&pos_kalman[1],distance_y,apriltap_data.y);
-				distance_wz=kalman_update(&pos_kalman[2],distance_wz,apriltap_data.wz);
-
-			}
-			
-			else{
-				pos_kalman[0].v_pre+=pos_kalman[0].v_noise_pre;
-			pos_kalman[1].v_pre+=pos_kalman[1].v_noise_pre;
-			feiman_update(&wz_feiman,distance_wz,distance_wz+imu_angle[ANGLE_USE]-imu_last+distance_wz);
-				
-			}
-			
-			xSemaphoreGive(apriltag_handle);
-		}
-		else {
-			pos_kalman[0].v_pre+=pos_kalman[0].v_noise_pre;
-			pos_kalman[1].v_pre+=pos_kalman[1].v_noise_pre;
-			distance_wz=feiman_update(&wz_feiman,distance_wz,distance_wz+imu_angle[ANGLE_USE]-imu_last+distance_wz);
-		}
+		
+		kalman_use();
 		
 		imu_last=imu_angle[ANGLE_USE];
 			
+		//if(switch_is_mid(chassis_move_mode->chassis_RC->rc.s[MODE_CHANNEL]))
 
         osDelay(5);
     }
@@ -225,6 +245,7 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
 	
 		
 		double dis=sqrt(distance_x*distance_x+distance_y*distance_y);
+		double b=distance_x/dis;
 	  double right_degree  = acos(distance_x/dis);
 		if(asin(distance_y/dis)<0)
 			right_degree=2*Pi-right_degree;
@@ -280,10 +301,21 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 				*wz_set = 0;
 			}
 			else{
-				float werr;
+				float werr,xerr,yerr;
 				current.x=distance_x;
 				current.y=distance_y;
 				current.w=distance_wz;
+				
+				xerr=pack.target.x-distance_x;
+				yerr=pack.target.y-distance_y;
+				
+				float dis=sqrt(xerr*xerr+yerr*yerr);
+				float right_degree  = (float)acos(xerr/dis);
+				if(asin(yerr/dis)<0)
+					right_degree=2*Pi-right_degree;
+				
+				pack.target.w=right_degree;
+				
 				werr=pack.target.w-distance_wz;
 				while(werr>Pi){
 					werr-=2*Pi;

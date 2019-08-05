@@ -169,6 +169,7 @@ SemaphoreHandle_t apriltag_handle;
   */
 
 
+
 float a = 0;
 
 int main(void)
@@ -268,9 +269,8 @@ int main(void)
 //	  change_pwm(&pwminit,90.0);
 //	  osDelay(1000);
 //}	  
-	  
-  
 
+	 
 	referee_send_queue = xQueueCreate(RECIVE_BUFFER_SIZE, RECIVE_TERM_SIZE);
 	auto_queue = xQueueCreate(AUTO_RECIVE_BUFFER_SIZE, sizeof(auto_pack_t));
 
@@ -289,20 +289,20 @@ int main(void)
   ins_taskHandle = osThreadCreate(osThread(ins_task), NULL);
 
 
-  osThreadDef(cali_task, calibrate_task, osPriorityNormal, 0, 512);
-  cali_taskHandle = osThreadCreate(osThread(cali_task), NULL);
+//  osThreadDef(cali_task, calibrate_task, osPriorityNormal, 0, 512);
+//  cali_taskHandle = osThreadCreate(osThread(cali_task), NULL);
 
   osThreadDef(detect, DetectTask, osPriorityNormal, 0, 256);
   detect_taskHandle = osThreadCreate(osThread(detect), NULL);
 
 
-  osThreadDef(chassis, chassis_task, osPriorityHigh, 0, 256);
+  osThreadDef(chassis, chassis_task, osPriorityHigh, 0, 512);
   chassis_taskHandle = osThreadCreate(osThread(chassis), NULL);
 
 
 
-  osThreadDef(chassis_send, chassis_distance_send_task, osPriorityHigh, 0, 512);
-  chassis_distance_send_taskHandle = osThreadCreate(osThread(chassis_send), NULL);
+//  osThreadDef(chassis_send, chassis_distance_send_task, osPriorityHigh, 0, 256);
+//  chassis_distance_send_taskHandle = osThreadCreate(osThread(chassis_send), NULL);
 
 	osThreadDef(referee, referee_task, osPriorityHigh, 0, 256);
   referee_taskHandle = osThreadCreate(osThread(referee), NULL);
@@ -1813,6 +1813,14 @@ static void MX_GPIO_Init(void)
 
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+	
+	
+	//config GPIO use
+	GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_5;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
 }
 
