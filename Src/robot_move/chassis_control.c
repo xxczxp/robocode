@@ -91,7 +91,7 @@ const float *imu_angle;
 #define ODOM_V 0.001
 #define APRIL_V 0.0005
 #define GYRO_V 0.005
-#define ANGLE_USE 2
+#define ANGLE_USE 0
 
 fp32 distance_x = 0.0f, distance_y = 0.0f, distance_wz = 0.0f;
 void chassis_distance_calc_task(void const * argument)
@@ -106,7 +106,7 @@ void chassis_distance_calc_task(void const * argument)
 	wz_feiman.v_noise_2=GYRO_V;
 	wz_feiman.v_1=0;
 	wz_feiman.v_2=0;
-	imu_angle=get_INS_quat_point();
+	imu_angle=get_INS_angle_point();
 	imu_last=imu_angle[ANGLE_USE];
 	
 	
@@ -172,6 +172,8 @@ void chassis_distance_calc_task(void const * argument)
 			pos_kalman[1].v_pre+=pos_kalman[1].v_noise_pre;
 			distance_wz=feiman_update(&wz_feiman,distance_wz,distance_wz+imu_angle[ANGLE_USE]-imu_last+distance_wz);
 		}
+		
+		imu_last=imu_angle[ANGLE_USE];
 			
 
         osDelay(5);

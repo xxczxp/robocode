@@ -289,14 +289,14 @@ int main(void)
   ins_taskHandle = osThreadCreate(osThread(ins_task), NULL);
 
 
-//  osThreadDef(cali_task, calibrate_task, osPriorityNormal, 0, 512);
-//  cali_taskHandle = osThreadCreate(osThread(cali_task), NULL);
+  osThreadDef(cali_task, calibrate_task, osPriorityNormal, 0, 512);
+  cali_taskHandle = osThreadCreate(osThread(cali_task), NULL);
 
   osThreadDef(detect, DetectTask, osPriorityNormal, 0, 256);
   detect_taskHandle = osThreadCreate(osThread(detect), NULL);
 
 
-  osThreadDef(chassis, chassis_task, osPriorityHigh, 0, 512);
+  osThreadDef(chassis, chassis_task, osPriorityHigh, 0, 256);
   chassis_taskHandle = osThreadCreate(osThread(chassis), NULL);
 
 

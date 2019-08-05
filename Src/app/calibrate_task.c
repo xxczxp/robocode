@@ -281,6 +281,7 @@ void cali_data_read(void)
         cali_sensor[i].name[1] = flash_read_buf[1];
         cali_sensor[i].name[2] = flash_read_buf[2];
         cali_sensor[i].cali_done = flash_read_buf[3];
+				//cali_sensor[2].cali_done = FIRMWARE_VERSION;
         //flashÎ»ÖÃÆ«ÒÆ
         offset += CALI_SENSOR_HEAD_LEGHT * 4;
 
