@@ -173,7 +173,7 @@ float a = 0;
 
 int main(void)
 {
-	A_star();
+	//A_Star();
   /* USER CODE BEGIN 1 */
  
   /* MCU Configuration--------------------------------------------------------*/

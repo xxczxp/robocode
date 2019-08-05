@@ -14,9 +14,7 @@ typedef struct {
 	int near;
 }node_t;
 	
-typedef struct{
 
-}pair;
-extern void A_star(void);
+extern void A_Star(int player_color);
 
 #endif
