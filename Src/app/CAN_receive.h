@@ -21,6 +21,8 @@
 
 #define CHASSIS_CAN hcan1
 #define GIMBAL_CAN hcan1
+#define OTHER_CAN hcan2
+#define GIMBAL_CAN_2 hcan2
 
 //电机码盘值最大以及中值
 #define HALF_ECD_RANGE 4096
@@ -56,6 +58,20 @@ typedef enum
     CAN_GIMBAL_ALL_ID = 0x1FF,
 
 } can_msg_id_e;
+
+typedef enum
+{
+CAN_OTHER_2006_ALL_ID = 0x210,
+CAN_2006_M1_ID = 0x211,
+CAN_2006_M2_ID = 0x212,
+}can_msg_id_2006;
+
+typedef enum
+{
+CAN_OTHER_3508_ALL_ID = 0x220,
+CAN_3508_M5_ID = 0x221,
+CAN_3508_M6_ID = 0x222,
+}can_msg_id_3508;
 
 //rm电机统一数据结构体
 typedef struct

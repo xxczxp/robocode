@@ -48,7 +48,9 @@ static int16_t motor_ecd_to_angle_change(uint16_t ecd, uint16_t offset_ecd);
 //声明电机变量
 static motor_measure_t motor_chassis[7];
 static CAN_TxHeaderTypeDef chassis_tx_message;
+static CAN_TxHeaderTypeDef other_motor;
 static uint8_t chassis_can_send_data[8];
+static uint8_t other_can_send_data[8];
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
@@ -195,6 +197,35 @@ void CAN_CMD_CHASSIS(int16_t motor1, int16_t motor2, int16_t motor3, int16_t mot
     HAL_CAN_AddTxMessage(&CHASSIS_CAN, &chassis_tx_message, chassis_can_send_data, &send_mail_box);
 }
 
+void CAN_CMD_OTHER_2(int16_t motor, int16_t num){
+		uint32_t sent_mail_box;
+		other_motor.StdId = CAN_OTHER_2006_ALL_ID;
+		other_motor.IDE = CAN_ID_STD;
+		other_motor.RTR = CAN_RTR_DATA;
+	  other_motor.DLC = 0x08;
+	 switch(num){
+		 case 1 :  other_can_send_data[0] = motor >> 8;
+									other_can_send_data[1] = motor;
+		 case 2 :other_can_send_data[2] = motor >> 8;
+						  		other_can_send_data[3] = motor;
+	 }
+	  HAL_CAN_AddTxMessage(&OTHER_CAN, &other_motor, other_can_send_data,&sent_mail_box);
+}
+
+void CAN_CMD_OTHER_3(int16_t motor, int16_t num){
+		uint32_t sent_mail_box;
+		other_motor.StdId = CAN_OTHER_3508_ALL_ID;
+		other_motor.IDE = CAN_ID_STD;
+		other_motor.RTR = CAN_RTR_DATA;
+	  other_motor.DLC = 0x08;
+	 switch(num){
+		 case 3:other_can_send_data[4] = motor >> 8;
+								other_can_send_data[5] = motor;
+		 case 4: other_can_send_data[6] = motor >> 8;
+								other_can_send_data[7] = motor;
+	 }
+	 HAL_CAN_AddTxMessage(&OTHER_CAN, &other_motor, other_can_send_data,&sent_mail_box);
+}
 //返回yaw电机变量地址，通过指针方式获取原始数据
 const motor_measure_t *get_Yaw_Gimbal_Motor_Measure_Point(void)
 {
