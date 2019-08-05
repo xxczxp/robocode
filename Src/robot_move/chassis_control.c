@@ -1,8 +1,9 @@
-﻿#include "chassis_control.h"
+#include "chassis_control.h"
 #include "chassis_task.h"
 #include "PID.h"
 #include "math.h"
 
+#include "INS_Task.h"
 #include "main.h"
 #include "arm_math.h"
 #include "string.h"
@@ -11,7 +12,7 @@
 #include  "chassis_behaviour.h"
 #include "referee.h"
 #include "semphr.h"
-
+#include "kalman.h"
 
 #define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 1.10537517e-4
 #define AB 0.25f
@@ -80,11 +81,36 @@ float dv[4]={0,0,0,0};
 
 float encode_sign[4];
 
+kalman_filter_t pos_kalman[3];
+feiman_filter_t wz_feiman;
+
+extern rm_imu_data_t rm_imu_data;
+float imu_last;
+const float *imu_angle;
+
+#define ODOM_V 0.001
+#define APRIL_V 0.0005
+#define GYRO_V 0.005
+#define ANGLE_USE 2
 
 fp32 distance_x = 0.0f, distance_y = 0.0f, distance_wz = 0.0f;
 void chassis_distance_calc_task(void const * argument)
 {
-
+	for(int i=0;i<3;i++){
+		pos_kalman[i].v_noise_pre=ODOM_V;
+		pos_kalman[i].v_noise_get=APRIL_V;
+		pos_kalman[i].v_pre=0;
+	}
+	pos_kalman[2].v_noise_pre=0.0;
+	wz_feiman.v_noise_1=ODOM_V;
+	wz_feiman.v_noise_2=GYRO_V;
+	wz_feiman.v_1=0;
+	wz_feiman.v_2=0;
+	imu_angle=get_INS_quat_point();
+	imu_last=imu_angle[ANGLE_USE];
+	
+	
+	
 		float x,y,theta,s[4];
 	distance_x=0;
 	distance_y=0;
@@ -122,16 +148,33 @@ void chassis_distance_calc_task(void const * argument)
 		{
 			if(apriltap_data.is_new==1){
 				apriltap_data.is_new=0;
-				distance_x=distance_x*0.5+apriltap_data.x*0.5;
-				distance_x=distance_y*0.5+apriltap_data.y*0.5;
-				distance_x=distance_wz*0.5+apriltap_data.wz*0.5;
+//				distance_x=distance_x*0.5+apriltap_data.x*0.5;
+//				distance_x=distance_y*0.5+apriltap_data.y*0.5;
+//				distance_x=distance_wz*0.5+apriltap_data.wz*0.5;
+				distance_wz=feiman_update(&wz_feiman,distance_wz,distance_wz+imu_angle[ANGLE_USE]-imu_last+distance_wz);
+				distance_x=kalman_update(&pos_kalman[0],distance_x,apriltap_data.x);
+				distance_y=kalman_update(&pos_kalman[1],distance_y,apriltap_data.y);
+				distance_wz=kalman_update(&pos_kalman[2],distance_wz,apriltap_data.wz);
+
+			}
+			
+			else{
+				pos_kalman[0].v_pre+=pos_kalman[0].v_noise_pre;
+			pos_kalman[1].v_pre+=pos_kalman[1].v_noise_pre;
+			feiman_update(&wz_feiman,distance_wz,distance_wz+imu_angle[ANGLE_USE]-imu_last+distance_wz);
+				
 			}
 			
 			xSemaphoreGive(apriltag_handle);
 		}
+		else {
+			pos_kalman[0].v_pre+=pos_kalman[0].v_noise_pre;
+			pos_kalman[1].v_pre+=pos_kalman[1].v_noise_pre;
+			distance_wz=feiman_update(&wz_feiman,distance_wz,distance_wz+imu_angle[ANGLE_USE]-imu_last+distance_wz);
+		}
 			
 
-        osDelay(10);
+        osDelay(5);
     }
 }
 
@@ -235,9 +278,19 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 				*wz_set = 0;
 			}
 			else{
+				float werr;
 				current.x=distance_x;
 				current.y=distance_y;
 				current.w=distance_wz;
+				werr=pack.target.w-distance_wz;
+				while(werr>Pi){
+					werr-=2*Pi;
+				}
+				while(werr<-Pi){
+					werr+=2*Pi;
+				}
+				current.w=pack.target.w+werr;
+				
 				PID_Calc_L(&auto_x, &auto_y, &pack.target, &current);
 				*vx_set =result[0];
 				*vy_set =result[1];
