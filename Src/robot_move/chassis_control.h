@@ -50,6 +50,8 @@ typedef enum{
 
 typedef struct{
 	int cmd;//AUTO_CMD
+	int cup_num;
+	int ball_num;
 	location_t target;
 	}auto_pack_t;
 

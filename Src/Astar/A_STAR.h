@@ -2,9 +2,11 @@
 #define A_STAR
 #include <stdio.h> 
 
+
+
 typedef struct {
 	int loc[2];
-	float date[3];   //G H F
+	float data[3];   //G H F
 	int state;
 	int occupy;
 	int position;
@@ -14,7 +16,6 @@ typedef struct {
 	int near;
 }node_t;
 	
-
 extern void A_Star(int player_color);
 
 #endif
