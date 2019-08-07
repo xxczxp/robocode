@@ -43,7 +43,9 @@
         }                                                \
     }
 
-
+extern void  up_init(void);
+extern void steer_open();
+extern void steer_close();
 extern chassis_move_t chassis_move;
 
 extern void chassis_motor_speed_update(chassis_move_t *chassis_move_update);
@@ -69,6 +71,7 @@ static void chassis_control_loop(chassis_move_t *chassis_move_control_loop);
 //主任务
 void chassis_task(void const *pvParameters)
 {
+	  up_init();
     //空闲一段时间
     vTaskDelay(CHASSIS_TASK_INIT_TIME);
     //底盘初始化
@@ -91,7 +94,7 @@ void chassis_task(void const *pvParameters)
         chassis_set_contorl(&chassis_move);
         //底盘控制PID计算
         chassis_control_loop(&chassis_move);
-
+			
         if (!(toe_is_error(ChassisMotor1TOE) || toe_is_error(ChassisMotor2TOE) || toe_is_error(ChassisMotor3TOE) || toe_is_error(ChassisMotor4TOE)))
         {
             //当遥控器掉线的时候，为relax状态，底盘电机指令为零，为了保证一定发送为零，故而不采用设置give_current的方法
@@ -103,6 +106,14 @@ void chassis_task(void const *pvParameters)
             {
                 CAN_CMD_CHASSIS(chassis_move.motor_chassis[0].give_current, chassis_move.motor_chassis[1].give_current,
                                 chassis_move.motor_chassis[2].give_current, chassis_move.motor_chassis[3].give_current);
+							CAN_CMD_UP(abs(chassis_move.chassis_RC->rc.ch[4]*7),0,0,0);
+							if (chassis_move.chassis_RC->rc.s[1] == 3){
+								steer_close();
+							}
+							else if(chassis_move.chassis_RC->rc.s[1] == 1){
+								steer_open();
+							} 
+							
             }
         }
         //系统延时

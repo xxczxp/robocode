@@ -279,7 +279,7 @@ int main(void)
 
 	xTaskCreate((TaskFunction_t)referee_send_task, "send_task", 256, NULL, osPriorityHigh, &referee_send_handle);
 
-	xTaskCreate((TaskFunction_t)up_task, "send_task", 256, NULL, osPriorityHigh, &up_control_taskHandle);
+	//xTaskCreate((TaskFunction_t)up_task, "send_task", 256, NULL, osPriorityHigh, &up_control_taskHandle);
 
   /* Create the thread(s) */
   /* definition and creation of led_trigger */
