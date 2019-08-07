@@ -35,6 +35,7 @@
 #include "referee.h"
 #include "protocol.h"
 #include "pwm.h"
+#include "up_control_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -110,6 +111,7 @@ osThreadId chassis_taskHandle;
 osThreadId chassis_distance_taskHandle;
 osThreadId referee_taskHandle;
 osThreadId chassis_distance_send_taskHandle;
+TaskHandle_t up_control_taskHandle;
 extern void set_pwm( void);
 /* USER CODE END PV */
 
@@ -151,6 +153,7 @@ extern void chassis_distance_calc_task(void const * argument);
 extern void chassis_distance_send_task(void const * argument);
 extern void referee_task(void const * argument);
 extern void referee_send_task(void const * argument);
+extern void up_task(void const *pvParameters);
 
 /* USER CODE END PFP */
 
@@ -276,7 +279,7 @@ int main(void)
 
 	xTaskCreate((TaskFunction_t)referee_send_task, "send_task", 256, NULL, osPriorityHigh, &referee_send_handle);
 
-
+	xTaskCreate((TaskFunction_t)up_task, "send_task", 256, NULL, osPriorityHigh, &up_control_taskHandle);
 
   /* Create the thread(s) */
   /* definition and creation of led_trigger */

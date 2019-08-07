@@ -8,6 +8,7 @@
 #ifndef UP_CONTROL_H
 #define UP_CONTROL_H
 
+extern void up_task(void const *pvParameters);
 
 
 #endif

@@ -120,4 +120,6 @@ extern const motor_measure_t *get_Trigger_Motor_Measure_Point(void);
 //返回底盘电机变量地址，通过指针方式获取原始数据,i的范围是0-3，对应0x201-0x204,
 extern const motor_measure_t *get_Chassis_Motor_Measure_Point(uint8_t i);
 
+extern void CAN_CMD_UP(int16_t motor1, int16_t motor2, int16_t motor3, int16_t motor4);
+
 #endif
