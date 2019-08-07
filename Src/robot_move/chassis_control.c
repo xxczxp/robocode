@@ -15,9 +15,9 @@
 #include "kalman.h"
 
 #define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 1.10537517e-4
-#define AB 0.25f
+#define AB /*0.25f*/ 0.0405
 #define WHEEL_R 0.0072f
-#define ARG 8.09699e-7f
+#define ARG (CHASSIS_MOTOR_RPM_TO_VECTOR_SEN * WHEEL_R)
 #define Pi acos(-1)
 
 
