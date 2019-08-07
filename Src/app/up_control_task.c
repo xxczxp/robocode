@@ -20,7 +20,7 @@ float motor_mearsure_bias[UP_MOTOR_NUM];
 
 const motor_measure_t *motor_measure_ptr;
 
-chassis_motor_t *up_motor;
+chassis_motor_t up_motor[UP_MOTOR_NUM];
 float up_target[UP_MOTOR_NUM];
 
 float up_motor_sign[UP_MOTOR_NUM];
@@ -45,7 +45,7 @@ void up_init(){
 	for(int i=0;i<UP_MOTOR_NUM;i++){
 		
 		PID_Init(&up_motor_speed_pid[i],PID_POSITION,motor_speed_pid,M2006_MOTOR_SPEED_PID_MAX_OUT,M2006_MOTOR_SPEED_PID_MAX_IOUT);
-		up_motor[i].chassis_motor_measure=motor_measure_ptr+4+i;
+		up_motor[i].chassis_motor_measure=&motor_measure_ptr[i];
 		motor_mearsure_bias[i]=up_motor[i].chassis_motor_measure->total_ecd;
 	}
 	
@@ -100,7 +100,7 @@ void up_task(void const *pvParameters){
             {
                CAN_CMD_UP(up_motor_speed_pid[0].out,up_motor_speed_pid[1].out,0.0,0.0);
             }
-		osDelay(5);
+		vTaskDelay(CHASSIS_CONTROL_TIME_MS);
 	}
 	
 	
