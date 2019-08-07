@@ -12,7 +12,7 @@ PidTypeDef ob_motor_position_pid={PID_POSITION,100,0,0};
 
 float motor_mearsure_bias;
 
-motor_measure_t ob_motor_measure;
+const motor_measure_t *ob_motor_measure;
 const motor_measure_t *motor_measure_ptr;
 
 
@@ -25,8 +25,8 @@ steering_engine servo;
 void up_init(){
 	servo.port=A;
 	motor_measure_ptr=get_Yaw_Gimbal_Motor_Measure_Point();
-	ob_motor_measure=motor_measure_ptr[4];
-	motor_mearsure_bias=ob_motor_measure.total_ecd;
+	ob_motor_measure=motor_measure_ptr+4;
+	motor_mearsure_bias=ob_motor_measure->total_ecd;
 }
 
 void steer_open(void){
@@ -38,7 +38,7 @@ void steer_close(){
 }
 
 float ob_pid_cacu(float target){
-	float speed=PID_Calc(&ob_motor_position_pid,ob_motor_measure.total_ecd,target);
+	float speed=PID_Calc(&ob_motor_position_pid,ob_motor_measure->total_ecd,target);
 }
 
 void up_task(void const *pvParameters){
