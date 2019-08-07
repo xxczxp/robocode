@@ -241,7 +241,7 @@ void CAN_CMD_UP(int16_t motor1, int16_t motor2, int16_t motor3, int16_t motor4){
     other_can_send_data[5] = motor3;
     other_can_send_data[6] = motor4 >> 8;
     other_can_send_data[7] = motor4;
-	HAL_CAN_AddTxMessage(&CHASSIS_CAN, &chassis_tx_message, chassis_can_send_data, &send_mail_box);
+	HAL_CAN_AddTxMessage(&GIMBAL_CAN, &chassis_tx_message, other_can_send_data,&send_mail_box);
 }
 
 //返回yaw电机变量地址，通过指针方式获取原始数据

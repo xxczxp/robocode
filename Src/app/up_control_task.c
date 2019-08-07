@@ -7,7 +7,7 @@
 #include "chassis_task.h"
 #include "Detect_Task.h"
 
-#define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 1.10537517e-4
+#define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 2.13081e-5
 #define OB_INDEX 0
 #define PULL_INDEX 1
 #define UP_MOTOR_NUM 3
@@ -42,8 +42,8 @@ void up_init(){
 	const static fp32 motor_speed_pid[3] = {M3505_MOTOR_SPEED_PID_KP, M3505_MOTOR_SPEED_PID_KI, M3505_MOTOR_SPEED_PID_KD};
 	
 	//DEBUG pid
-	const static fp32 ob_position_pid[3] ={100,0,0 };
-	const static fp32 pull_position_pid[3] = {100,0,0};
+	const static fp32 ob_position_pid[3] ={2,0,10 };
+	const static fp32 pull_position_pid[3] = {1,0,0};
 	
 	
 	for(int i=0;i<UP_MOTOR_NUM;i++){
@@ -54,7 +54,7 @@ void up_init(){
 	}
 	
 	//DEBUG pid
-	PID_Init(&up_motor_position_pid[OB_INDEX],PID_POSITION,ob_position_pid,2.0f,0.2f);
+	PID_Init(&up_motor_position_pid[OB_INDEX],PID_POSITION,ob_position_pid,0.3f,0.2f);
 	PID_Init(&up_motor_position_pid[PULL_INDEX],PID_POSITION,pull_position_pid,2.0f,0.2f);
 	
 }
@@ -87,8 +87,7 @@ void up_pid_cacu(void){
 
  
 void up_task(void const *pvParameters){
-	up_init();
-	
+	up_init();	
 	while(1){
 		
 		
@@ -98,7 +97,7 @@ void up_task(void const *pvParameters){
 		
 		if (toe_is_error(DBUSTOE))
 						{
-                CAN_CMD_CHASSIS(0, 0, 0, 0);
+                CAN_CMD_UP(0, 0, 0, 0);
             }
             else
             {
