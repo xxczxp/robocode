@@ -291,8 +291,8 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 				if(pack.cmd==MOVE_CMD && next_cmd.cmd == PUT_BALL_CMD){
 					state=MOVE; 
 				  if(is_create == 0){
-						xTaskCreate(cup_out_task,"cup_out_task" , 512, &ucParameterToPass, 1, &C_O_T);	
-						xTaskCreate(trans_ball_task, "trans_ball_task", 512, &ucParameterToPass, 1, &T_B_T);
+						//xTaskCreate((TaskFunction_t)cup_out_task,"cup_out_task" , 512, &ucParameterToPass, 1, &C_O_T);	
+						xTaskCreate((TaskFunction_t)trans_ball_task, "trans_ball_task", 512, &ucParameterToPass, 1, &T_B_T);
 						is_create = 1;
 					}
 					else{
@@ -303,6 +303,8 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 					state=MOVE;
 				}
 				else if(pack.cmd==PUT_BALL_CMD){
+					
+					
 					state=PUT_BALL;
 				}
 				target.x = pack.target.x*0.93;
@@ -318,6 +320,7 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 				*vx_set=0;
 				*vy_set = 0;
 				*wz_set = 0;
+				
 			}
 			else{
 				float werr,xerr,yerr;
@@ -351,21 +354,15 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 			}
 		}break;
 		
-		case  PUT_BALL_CMD:
+		case  PUT_BALL_MOVE:
 		{
-			switch (inner_state){
-				case move_target :{
-				
-				
-				
-				}
+//			switch (inner_state){
+//				case move_target :
+//					{
+
+//				}break;
+//			}
 			
-			
-			
-			
-			
-			
-			}
 		
 		
 		

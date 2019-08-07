@@ -125,8 +125,8 @@ void up_pid_cacu(){
 
 }
 void trans_ball_task(void const *pvParameters){
-  up_target[0] = next_cmd.ball_num * PI /2;
-	float speed = PID_Calc(up_motor_position_pid, up_motor[0].chassis_motor_measure->total_ecd*up_motor_sign[0]*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN, up_target[0]);
+  up_target[0] += next_cmd.ball_num * PI /2;
+	
 }
 
  

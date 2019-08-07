@@ -64,6 +64,7 @@ typedef enum{
 	CMD_GET,
 	MOVE,
 	PUT_BALL,
+	PUT_BALL_MOVE,
 	STOP
 }STEP_AUTO_STATE;
 	
