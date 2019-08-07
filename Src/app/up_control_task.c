@@ -1,6 +1,6 @@
-
 #include "up_control_task.h"
 #include "pwm.h"
+#include <math.h>
 
 #include "pid.h"
 #include "CAN_receive.h"
@@ -11,6 +11,7 @@
 #define OB_INDEX 0
 #define PULL_INDEX 1
 #define UP_MOTOR_NUM 3
+#define PI acos(-1)
 
 PidTypeDef up_motor_speed_pid[UP_MOTOR_NUM]={PID_POSITION,M3505_MOTOR_SPEED_PID_KP, M3505_MOTOR_SPEED_PID_KI, M3505_MOTOR_SPEED_PID_KD};
 PidTypeDef up_motor_position_pid[UP_MOTOR_NUM]={PID_POSITION,100,0,0};
@@ -26,16 +27,20 @@ float up_target[UP_MOTOR_NUM];
 float up_motor_sign[UP_MOTOR_NUM];
 
 
+extern auto_pack_t next_cmd;
 
+steering_engine ball_serve;
+steering_engine cup_serve;
+steering_engine free_serve;
 
-steering_engine servo;
-
-void up_init(){
+void up_init(void){
 	
 	up_motor_sign[0]=1;
 	up_motor_sign[1]=1;
 	up_motor_sign[2]=1;
-	servo.port=A;
+	ball_serve.port = A;
+	free_serve.port = B;
+	cup_serve.port = C;
 	motor_measure_ptr=get_Yaw_Gimbal_Motor_Measure_Point();
 
 	
@@ -43,30 +48,61 @@ void up_init(){
 	
 	//DEBUG pid
 	const static fp32 ob_position_pid[3] ={100,0,0 };
-	const static fp32 pull_position_pid[3] = {100,0,0};
+//	const static fp32 pull_position_pid[3] = {100,0,0};
 	
 	
 	for(int i=0;i<UP_MOTOR_NUM;i++){
 		
 		PID_Init(&up_motor_speed_pid[i],PID_POSITION,motor_speed_pid,M2006_MOTOR_SPEED_PID_MAX_OUT,M2006_MOTOR_SPEED_PID_MAX_IOUT);
-		up_motor[i].chassis_motor_measure=motor_measure_ptr+4+i;
-		motor_mearsure_bias[i]=up_motor[i].chassis_motor_measure->total_ecd;
+/*??*/		up_motor[i].chassis_motor_measure=motor_measure_ptr+4+i;
+/*??*/		motor_mearsure_bias[i]=up_motor[i].chassis_motor_measure->total_ecd;
 	}
 	
 	//DEBUG pid
 	PID_Init(&up_motor_position_pid[OB_INDEX],PID_POSITION,ob_position_pid,2.0f,0.2f);
-	PID_Init(&up_motor_position_pid[PULL_INDEX],PID_POSITION,pull_position_pid,2.0f,0.2f);
+//	PID_Init(&up_motor_position_pid[PULL_INDEX],PID_POSITION,pull_position_pid,2.0f,0.2f);
 	
 }
 
 void steer_open(void){
-	change_pwm(&servo,STEER_OPEN_ANGLE);
+	change_pwm(&ball_serve,STEER_OPEN_ANGLE);
 }
 
 void steer_close(){
-	change_pwm(&servo,STEER_CLOSE_ANGLE);
+	change_pwm(&ball_serve,STEER_CLOSE_ANGLE);
+}
+void OPCL_task(void const *pvParameters){
+	steer_open();
+	vTaskDelay(500);
+	steer_close();
+	vTaskDelay(10);
+	vTaskDelete(NULL);
+}
+	
+	
+void cup_out_task(void const *pvParameters){
+	int i = 0;
+	while(i < next_cmd.cup_num){
+	change_pwm(&cup_serve,45);
+	vTaskDelay(100);
+	change_pwm(&cup_serve,180);
+	vTaskDelay(100);
+	change_pwm(&cup_serve, 90);
+	i++;
+	}
+	vTaskDelete(NULL);
 }
 
+void free_ball_task(void const *pvParameters){
+	int i = 0;
+	while(i < next_cmd.cup_num){
+	change_pwm(&free_serve, 45);
+	vTaskDelay(100);
+	change_pwm(&cup_serve,90);
+	i++;
+	}
+	vTaskDelete(NULL);
+}
 
 
 void up_motor_speed_update(){
@@ -76,14 +112,18 @@ void up_motor_speed_update(){
 
 }
 
-void up_pid_cacu(void){
+void up_pid_cacu(){
 	for(int i=0;i<UP_MOTOR_NUM;i++){
-		float speed=PID_Calc(up_motor_position_pid+i,up_motor[i].chassis_motor_measure->total_ecd*up_motor_sign[i]*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN ,up_target[i]);
+		float speed=PID_Calc(up_motor_position_pid+i, up_motor[i].chassis_motor_measure->total_ecd*up_motor_sign[i]*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN, up_target[i]);
 		PID_Calc(up_motor_speed_pid+i,up_motor[i].speed,speed);
+		
 	}
 
 }
-
+void trans_ball_task(void const *pvParameters){
+  up_target[0] = next_cmd.ball_num * PI /2;
+	float speed = PID_Calc(up_motor_position_pid, up_motor[0].chassis_motor_measure->total_ecd*up_motor_sign[0]*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN, up_target[0]);
+}
 
  
 void up_task(void const *pvParameters){
