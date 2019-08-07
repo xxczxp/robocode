@@ -38,7 +38,7 @@ void steer_close(){
 }
 
 float ob_pid_cacu(float target){
-	float speed=PID_Calc(ob_motor_position_pid,ob_motor_measure.total_ecd,target);
+	float speed=PID_Calc(&ob_motor_position_pid,ob_motor_measure.total_ecd,target);
 }
 
 void up_task(void const *pvParameters){
