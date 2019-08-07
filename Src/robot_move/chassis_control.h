@@ -52,6 +52,8 @@ typedef enum{
 
 typedef struct{
 	int cmd;//AUTO_CMD
+	int ball_num;
+	int cup_num;
 	location_t target;
 	}auto_pack_t;
 
@@ -65,6 +67,21 @@ typedef enum{
 	STOP
 }STEP_AUTO_STATE;
 	
+typedef enum{
+	move_target,
+	move_Sentry,
+	release
+}AUTO_INNER_STATE;
+
+//float special_node[5][7] = {
+//	{0, 1, 2, 3, 4, 5, 6},                        //∏⁄…⁄±‡∫≈
+//	{2, 6, 0, 4, 8, 2, 6},                        //x÷·Œª÷√
+//	{0, 0, 3, 3, 3, 6, 6},                        //y÷·Œª÷√
+//	{1.5, 1.5, , PI, 0, PI/2, PI/2},			//¿∂∑ΩΩ«∂»
+//	
+
+//}
+
 
 
 #endif

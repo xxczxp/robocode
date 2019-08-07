@@ -3,6 +3,7 @@
 #include "PID.h"
 #include "math.h"
 
+#include "up_control_task.h"
 #include "INS_Task.h"
 #include "main.h"
 #include "arm_math.h"
@@ -271,28 +272,46 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
 	
 }
 
+static unsigned char ucParameterToPass;
+auto_pack_t next_cmd;
 int state=CMD_GET;
+int inner_state = move_target; 
+int is_create = 0;
 void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector){
 	static auto_pack_t pack;
+	xTaskHandle C_O_T;
+  xTaskHandle T_B_T;
+	
 	switch(state){
 		case CMD_GET:
-		{
+		{ 
 			if(xQueueReceive(auto_queue,&pack,0)==pdPASS)
-			{
-				if(pack.cmd==MOVE_CMD)
+			{		 
+				xQueuePeek(auto_queue,&next_cmd,10);
+				if(pack.cmd==MOVE_CMD && next_cmd.cmd == PUT_BALL_CMD){
+					state=MOVE; 
+				  if(is_create == 0){
+						xTaskCreate(cup_out_task,"cup_out_task" , 512, &ucParameterToPass, 1, &C_O_T);	
+						xTaskCreate(trans_ball_task, "trans_ball_task", 512, &ucParameterToPass, 1, &T_B_T);
+						is_create = 1;
+					}
+					else{
+						return;
+					}
+				}
+				else if(pack.cmd==MOVE_CMD && next_cmd.cmd != PUT_BALL_CMD){
 					state=MOVE;
+				}
 				else if(pack.cmd==PUT_BALL_CMD){
 					state=PUT_BALL;
 				}
+				target.x = pack.target.x*0.93;
+				target.y = pack.target.y*0.93;
 			}
-			*vx_set=0;
-			*vy_set = 0;
-			*wz_set = 0;
-			
-		}break;
-		case MOVE:
+		}
+			case MOVE:
 		{
-			if((abs(current.x-distance_x)<X_PASS_LIMIT)&&(abs(current.y-distance_y)<Y_PASS_LIMIT) && (abs(current.w-distance_wz)<WZ_PASS_LIMIT))
+			if((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz-target.w)<WZ_PASS_LIMIT))
 			{
 				
 				state=CMD_GET;
@@ -331,13 +350,34 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 				*wz_set=PID_Calc(&auto_wz,current.w,target.w);
 			}
 		}break;
+		
+		case  PUT_BALL_CMD:
+		{
+			switch (inner_state){
+				case move_target :{
+				
+				
+				
+				}
+			
+			
+			
+			
+			
+			
+			}
+		
+		
+		
+		
+		
+		
+		}
 	}
 }
 
 
-
-void chassis_PID_init(void)
-{
+void chassis_PID_init(void){
     //�����ٶȻ�pidֵ
     const static fp32 motor_speed_pid[3] = {M3505_MOTOR_SPEED_PID_KP, M3505_MOTOR_SPEED_PID_KI, M3505_MOTOR_SPEED_PID_KD};
 
