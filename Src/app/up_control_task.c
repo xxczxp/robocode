@@ -1,7 +1,7 @@
 
-#include "up_control.h"
+#include "up_control_task.h"
 #include "pwm.h"
-#include "up_control.h"
+
 #include "pid.h"
 #include "CAN_receive.h"
 
