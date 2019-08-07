@@ -31,6 +31,10 @@ float up_motor_sign[UP_MOTOR_NUM];
 steering_engine servo;
 
 void up_init(){
+	
+	up_motor_sign[0]=1;
+	up_motor_sign[1]=1;
+	up_motor_sign[2]=1;
 	servo.port=A;
 	motor_measure_ptr=get_Yaw_Gimbal_Motor_Measure_Point();
 
@@ -75,7 +79,7 @@ void up_motor_speed_update(){
 void up_pid_cacu(void){
 	for(int i=0;i<UP_MOTOR_NUM;i++){
 		float speed=PID_Calc(up_motor_position_pid+i,up_motor[i].chassis_motor_measure->total_ecd*up_motor_sign[i]*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN ,up_target[i]);
-		PID_Calc(up_motor_speed_pid+i,up_motor[i].speed,up_target[i]);
+		PID_Calc(up_motor_speed_pid+i,up_motor[i].speed,speed);
 	}
 
 }
