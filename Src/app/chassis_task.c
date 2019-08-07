@@ -106,7 +106,7 @@ void chassis_task(void const *pvParameters)
             {
                 CAN_CMD_CHASSIS(chassis_move.motor_chassis[0].give_current, chassis_move.motor_chassis[1].give_current,
                                 chassis_move.motor_chassis[2].give_current, chassis_move.motor_chassis[3].give_current);
-							CAN_CMD_UP(abs(chassis_move.chassis_RC->rc.ch[4]*7),0,0,0);
+							CAN_CMD_UP(abs(chassis_move.chassis_RC->rc.ch[4]*4),0,0,0);
 							if (chassis_move.chassis_RC->rc.s[1] == 3){
 								steer_close();
 							}

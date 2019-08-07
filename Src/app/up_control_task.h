@@ -1,6 +1,6 @@
 
 #define STEER_CLOSE_ANGLE 127
-#define STEER_OPEN_ANGLE 110
+#define STEER_OPEN_ANGLE 100
 
 extern void OPCL_task(void const *pvParameters);
 extern void cup_out_task(void const *pvParameters);

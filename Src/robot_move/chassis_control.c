@@ -68,10 +68,10 @@ void chassis_motor_speed_update(chassis_move_t *chassis_move_update)
 
 void chassis_vector_to_mecanum_wheel_speed(const fp32 vx_set, const fp32 vy_set, const fp32 wz_set, fp32 wheel_speed[4])
 {
-    wheel_speed[0]=-(vx_set+vy_set+wz_set*AB);
-	wheel_speed[1]=vx_set-vy_set-wz_set*AB;
-	wheel_speed[2]=vx_set+vy_set-wz_set*AB;
-	wheel_speed[3]=-vx_set+vy_set-wz_set*AB;
+    wheel_speed[0]=0.5*-(vx_set-vy_set+wz_set*AB);
+	wheel_speed[1]=0.5*vx_set+vy_set-wz_set*AB;
+	wheel_speed[2]=0.5*vx_set-vy_set-wz_set*AB;
+	wheel_speed[3]=0.5*-vx_set-vy_set-wz_set*AB;
 
 
 }
@@ -234,39 +234,16 @@ extern chassis_ctrl_info_t ch_auto_control_data;
 void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector)
 {
     if (vx_set == NULL || vy_set == NULL || wz_set == NULL || chassis_move_rc_to_vector == NULL)
-    {
-
+    
         return;
-    }
+    
 
 
-	current.x = distance_x;
-	current.y = distance_y;
-	current.w = 0;
+
 	
-		
-		double dis=sqrt(distance_x*distance_x+distance_y*distance_y);
-		double b=distance_x/dis;
-	  double right_degree  = acos(distance_x/dis);
-		if(asin(distance_y/dis)<0)
-			right_degree=2*Pi-right_degree;
-		
-		target.x=3;
-		
-		
-	double adjustment_dis_degee =distance_wz;
-		
-
-	double delta_degree = right_degree-adjustment_dis_degee;
-		while(delta_degree>PI)
-			delta_degree-=2*Pi;
-		while(delta_degree<-Pi)
-			delta_degree+=2*Pi;
-		
-	PID_Calc_L(&auto_x, &auto_y, &target, &current);
-	*vx_set = 0.5*PID_Calc(&auto_x,dis,target.x);
-	*vy_set = 0.6;
-	*wz_set = PID_Calc(&auto_wz, distance_wz,distance_wz+delta_degree);
+	*vx_set = 0;
+	*vy_set = 0;
+	*wz_set = -0;
 	
 		// step_auto_control(vx_set, vy_set, wz_set, chassis_move_rc_to_vector);
 	
