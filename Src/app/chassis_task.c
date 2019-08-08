@@ -67,6 +67,8 @@ static void chassis_set_contorl(chassis_move_t *chassis_move_control);
 //底盘PID计算以及运动分解
 static void chassis_control_loop(chassis_move_t *chassis_move_control_loop);
 
+int last_big=0,now_big=0;
+extern float up_target[3];
 
 //主任务
 void chassis_task(void const *pvParameters)
@@ -94,6 +96,7 @@ void chassis_task(void const *pvParameters)
         chassis_set_contorl(&chassis_move);
         //底盘控制PID计算
         chassis_control_loop(&chassis_move);
+			now_big=chassis_move.chassis_RC->rc.ch[4]>330;
 			
         if (!(toe_is_error(ChassisMotor1TOE) || toe_is_error(ChassisMotor2TOE) || toe_is_error(ChassisMotor3TOE) || toe_is_error(ChassisMotor4TOE)))
         {
@@ -106,7 +109,9 @@ void chassis_task(void const *pvParameters)
             {
                 CAN_CMD_CHASSIS(chassis_move.motor_chassis[0].give_current, chassis_move.motor_chassis[1].give_current,
                                 chassis_move.motor_chassis[2].give_current, chassis_move.motor_chassis[3].give_current);
-							CAN_CMD_UP(abs(chassis_move.chassis_RC->rc.ch[4]*7),0,0,0);
+//							CAN_CMD_UP(abs(chassis_move.chassis_RC->rc.ch[4]*7),0,0,0);
+							if(now_big==1&&last_big==0)
+								up_target[0]+=PI;
 							if (chassis_move.chassis_RC->rc.s[1] == 3){
 								steer_close();
 							}
@@ -116,6 +121,8 @@ void chassis_task(void const *pvParameters)
 							
             }
         }
+				
+				last_big=now_big;
         //系统延时
         vTaskDelay(CHASSIS_CONTROL_TIME_MS);
 
