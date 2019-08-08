@@ -83,3 +83,5 @@ Src/communication/.DS_Store
 # MDK-ARM/HAL_INFANTRY.uvprojx
 # MDK-ARM/HAL_INFANTRY.uvoptx
 MDK-ARM/RTE/RTE_Components.h
+Src/robot_move/.DS_Store
+MDK-ARM/.DS_Store
