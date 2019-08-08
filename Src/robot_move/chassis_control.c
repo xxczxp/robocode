@@ -21,13 +21,14 @@
 #define ARG /*(CHASSIS_MOTOR_RPM_TO_VECTOR_SEN * WHEEL_R)*/ 4.089931e-4
 #define Pi acos(-1)
 
+int PLayer = 1;
 
 PidTypeDef auto_x = {0, 0.5, 7e-10, 0.0005, 1, 1};
 PidTypeDef auto_y = {0, 0.0f, 0.0f, 0.0f, 1, 1};
 PidTypeDef auto_wz = {0, 0.5, 7e-10, 0.005, 1, 1};
 
 extern SemaphoreHandle_t apriltag_handle;
-
+extern int task_finish;
 extern uint8_t chassis_odom_pack_solve(
   float x,
   float y,
@@ -42,7 +43,13 @@ extern float	result[2];
 location_t current;
 location_t target = {0, 0, 0};
 
-
+float special_node[5][7] = {
+	{0, 1, 2, 3, 4, 5, 6},                        //岗哨编号
+	{2, 6, 0, 4, 8, 2, 6},                        //x轴位置
+	{0, 0, 3, 3, 3, 6, 6},                        //y轴位置
+	{1.5*PI, 1.5*PI, PI, PI, 0, PI/2, PI/2},			//蓝方角度
+	{PI/2, PI/2, 0, 0, PI, 1.5*PI, 1.5*PI}        //红方角度
+};
 
 //�����˶�����
  chassis_move_t chassis_move;
@@ -307,22 +314,23 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 					
 					state=PUT_BALL;
 				}
-				target.x = pack.target.x*0.93;
-				target.y = pack.target.y*0.93;
+//				target.x = pack.target.x*0.93;
+//				target.y = pack.target.y*0.93;
 			}
-		}
+		}break;
 			case MOVE:
 		{
-			if((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz-target.w)<WZ_PASS_LIMIT))
+			
+				if((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz - target.w)<WZ_PASS_LIMIT))
 			{
 				
 				state=CMD_GET;
 				*vx_set=0;
 				*vy_set = 0;
 				*wz_set = 0;
-				
 			}
 			else{
+				
 				float werr,xerr,yerr;
 				current.x=distance_x;
 				current.y=distance_y;
@@ -350,12 +358,192 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 				PID_Calc_L(&auto_x, &auto_y, &pack.target, &current);
 				*vx_set =result[0];
 				*vy_set =result[1];
-				*wz_set=PID_Calc(&auto_wz,current.w,target.w);
+				*wz_set=PID_Calc(&auto_wz,current.w,pack.target.w);
+					
+			}
+			state = CMD_GET;
+		}break;
+				
+				case PUT_BALL :{
+					switch(inner_state){
+						case move_target :{
+							if((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz - target.w)<WZ_PASS_LIMIT)){
+									inner_state=move_Sentry;
+									*vx_set=0;
+									*vy_set = 0;
+									*wz_set = 0;		
+								}								
+					
+							
+							
+						else{
+							float werr;
+//								xerr,yerr;
+								current.x=distance_x;
+								current.y=distance_y;
+								current.w=distance_wz;
+					
+//							xerr=pack.target.x-distance_x;
+//							yerr=pack.target.y-distance_y;
+//					
+//							float dis=sqrt(xerr*xerr+yerr*yerr);
+//							float right_degree  = (float)acos(xerr/dis);
+//							if(asin(yerr/dis)<0)
+//							right_degree=2*Pi-right_degree;
+//					
+//							pack.target.w=right_degree;
+//							werr=pack.target.w-distance_wz;
+//					
+							if (PLayer == 1){
+								target.w = special_node[3][pack.near];				
+							}
+							else{
+								target.w = special_node[4][pack.near];
+							}
+//							while(werr>Pi){
+//								werr-=2*Pi;
+//							}
+//							while(werr<-Pi){
+//								werr+=2*Pi;
+//							}
+//							current.w=pack.target.w+werr;
+					
+							PID_Calc_L(&auto_x, &auto_y, &pack.target, &current);
+							*vx_set =result[0];
+							*vy_set =result[1];
+							*wz_set=PID_Calc(&auto_wz,current.w,target.w);	
+							
+					}
+				}break;
+				    case move_Sentry:{
+							if((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz-target.w)<WZ_PASS_LIMIT))
+			{
+				
+				inner_state=release;
+				*vx_set=0;
+				*vy_set = 0;
+				*wz_set = 0;
+				
+			}
+							else{
+							float xerr, yerr, werr;
+							current.x=distance_x;
+							current.y=distance_y;
+							current.w=distance_wz;
+              
+							if(PLayer == 1){
+								if(special_node[3][pack.near] == PI){
+								xerr=special_node[1][pack.near]-distance_x - 0.31;
+							  yerr=special_node[2][pack.near]-distance_y;}
+							
+								else if( special_node[3][pack.near] == PI/2){
+								xerr=special_node[1][pack.near]-distance_x;
+							  yerr=special_node[2][pack.near]-distance_y - 0.31;}
+								
+									else if( special_node[3][pack.near] == 0){
+								xerr=special_node[1][pack.near]-distance_x;
+							  yerr=special_node[2][pack.near]-distance_y + 0.31;}
+									
+									else {
+								xerr=special_node[1][pack.near]-distance_x + 0.31;
+							  yerr=special_node[2][pack.near]-distance_y ;}	
+							}
+							
+							else{
+								if(special_node[4][pack.near] == PI){
+									xerr=special_node[1][pack.near]-distance_x - 0.31;
+									yerr=special_node[2][pack.near]-distance_y;}
+							
+								else if( special_node[4][pack.near] == PI/2){
+									xerr=special_node[1][pack.near]-distance_x;
+									yerr=special_node[2][pack.near]-distance_y - 0.31;}
+								
+								else if( special_node[4][pack.near] == 0){
+									xerr=special_node[1][pack.near]-distance_x;
+									yerr=special_node[2][pack.near]-distance_y + 0.31;}
+									
+								else {
+									xerr=special_node[1][pack.near]-distance_x + 0.31;
+									yerr=special_node[2][pack.near]-distance_y ;}	
+							}
+							
+							float dis=sqrt(xerr*xerr+yerr*yerr);
+							float right_degree  = (float)acos(xerr/dis);
+							if(asin(yerr/dis)<0)
+								right_degree=2*Pi-right_degree;
+				
+							pack.target.w=right_degree;
+				
+							werr=pack.target.w-distance_wz;
+							while(werr>Pi){
+								werr-=2*Pi;
+								}
+							while(werr<-Pi){
+								werr+=2*Pi;
+							}
+							current.w=pack.target.w+werr;
+				
+							PID_Calc_L(&auto_x, &auto_y, &pack.target, &current);
+							*vx_set =result[0];
+							*vy_set =result[1];
+							*wz_set=PID_Calc(&auto_wz,current.w,pack.target.w);
+						}
+						}break;
+						
+						case release:{
+						 if(task_finish == 0){
+							OPCL_task(NULL);
+						 }
+						 else if(task_finish == 1){
+						   inner_state=move_target;
+						 }
+						}
 			}
 		}break;
+				state = CMD_GET;
+//			if((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz-target.w)<WZ_PASS_LIMIT))
+//			{
+//				
+//				state=CMD_GET;
+//				*vx_set=0;
+//				*vy_set = 0;
+//				*wz_set = 0;
+//				
+//			}
+//			else{
+//				float werr,xerr,yerr;
+//				current.x=distance_x;
+//				current.y=distance_y;
+//				current.w=distance_wz;
+//				
+//				xerr=pack.target.x-distance_x;
+//				yerr=pack.target.y-distance_y;
+//				
+//				float dis=sqrt(xerr*xerr+yerr*yerr);
+//				float right_degree  = (float)acos(xerr/dis);
+//				if(asin(yerr/dis)<0)
+//					right_degree=2*Pi-right_degree;
+//				
+//				pack.target.w=right_degree;
+//				
+//				werr=pack.target.w-distance_wz;
+//				while(werr>Pi){
+//					werr-=2*Pi;
+//				}
+//				while(werr<-Pi){
+//					werr+=2*Pi;
+//				}
+//				current.w=pack.target.w+werr;
+//				
+//				PID_Calc_L(&auto_x, &auto_y, &pack.target, &current);
+//				*vx_set =result[0];
+//				*vy_set =result[1];
+//				*wz_set=PID_Calc(&auto_wz,current.w,target.w);
+//			}
 		
-		case  PUT_BALL_MOVE:
-		{
+		
+//		case  PUT_BALL_MOVE:
+//		{
 //			switch (inner_state){
 //				case move_target :
 //					{
@@ -369,7 +557,7 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 		
 		
 		
-		}
+//		}
 	}
 }
 

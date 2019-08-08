@@ -1,4 +1,4 @@
-# reference to https://blog.csdn.net/u010160335/article/details/80068175
+﻿# reference to https://blog.csdn.net/u010160335/article/details/80068175
 # reference to Keil->help->µVision User's Guide->Appendix->B. File Types
 
 # Project Files
@@ -85,3 +85,6 @@ Src/communication/.DS_Store
 MDK-ARM/RTE/RTE_Components.h
 Src/robot_move/.DS_Store
 MDK-ARM/.DS_Store
+*.orig
+*.h.orig
+*.c.orig

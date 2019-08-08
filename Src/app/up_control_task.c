@@ -18,6 +18,7 @@ PidTypeDef up_motor_position_pid[UP_MOTOR_NUM]={PID_POSITION,100,0,0};
 
 float motor_mearsure_bias[UP_MOTOR_NUM];
 
+int task_finish = 0;
 
 const motor_measure_t *motor_measure_ptr;
 

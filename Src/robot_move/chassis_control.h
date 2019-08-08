@@ -39,6 +39,8 @@
 #define CHASSIS_ANGLE_PID_MAX_OUT 6.0f
 #define CHASSIS_ANGLE_PID_MAX_IOUT 0.2f
 
+#define PI 3.1415926f
+
 typedef struct{
 float x;
 float y;
@@ -54,6 +56,7 @@ typedef struct{
 	int cmd;//AUTO_CMD
 	int ball_num;
 	int cup_num;
+	int near;
 	location_t target;
 	}auto_pack_t;
 
@@ -74,14 +77,7 @@ typedef enum{
 	release
 }AUTO_INNER_STATE;
 
-//float special_node[5][7] = {
-//	{0, 1, 2, 3, 4, 5, 6},                        //∏⁄…⁄±‡∫≈
-//	{2, 6, 0, 4, 8, 2, 6},                        //x÷·Œª÷√
-//	{0, 0, 3, 3, 3, 6, 6},                        //y÷·Œª÷√
-//	{1.5, 1.5, , PI, 0, PI/2, PI/2},			//¿∂∑ΩΩ«∂»
-//	
 
-//}
 
 
 
