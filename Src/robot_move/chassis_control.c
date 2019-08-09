@@ -15,10 +15,10 @@
 #include "semphr.h"
 #include "kalman.h"
 
-#define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 1.10537517e-4
-#define AB /*0.25f*/ 0.0405
-#define WHEEL_R 0.0072f
-#define ARG /*(CHASSIS_MOTOR_RPM_TO_VECTOR_SEN * WHEEL_R)*/ 4.089931e-4
+#define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 4.05366e-4
+#define AB /*0.25f*/ 0.405
+#define WHEEL_R 0.075f
+#define ARG (CHASSIS_MOTOR_RPM_TO_VECTOR_SEN * WHEEL_R)
 #define Pi acos(-1)
 
 int PLayer = 1;
