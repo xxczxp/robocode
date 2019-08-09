@@ -79,10 +79,10 @@ void chassis_task(void const *pvParameters)
     //���̳�ʼ��
     chassis_init(&chassis_move);
     //�жϵ��̵����Ƿ�������
-    while (toe_is_error(ChassisMotor1TOE) || toe_is_error(ChassisMotor2TOE) || toe_is_error(ChassisMotor3TOE) || toe_is_error(ChassisMotor4TOE) || toe_is_error(DBUSTOE))
-    {
-        vTaskDelay(CHASSIS_CONTROL_TIME_MS);
-    }
+//    while (toe_is_error(ChassisMotor1TOE) || toe_is_error(ChassisMotor2TOE) || toe_is_error(ChassisMotor3TOE) || toe_is_error(ChassisMotor4TOE) || toe_is_error(DBUSTOE))
+//    {
+//        vTaskDelay(CHASSIS_CONTROL_TIME_MS);
+//    }
 
     while (1)
     {
@@ -98,8 +98,8 @@ void chassis_task(void const *pvParameters)
         chassis_control_loop(&chassis_move);
 			now_big=chassis_move.chassis_RC->rc.ch[4]>330;
 
-        if (!(toe_is_error(ChassisMotor1TOE) || toe_is_error(ChassisMotor2TOE) || toe_is_error(ChassisMotor3TOE) || toe_is_error(ChassisMotor4TOE)))
-        {
+//        if (!(toe_is_error(ChassisMotor1TOE) || toe_is_error(ChassisMotor2TOE) || toe_is_error(ChassisMotor3TOE) || toe_is_error(ChassisMotor4TOE)))
+//        {
             //��ң�������ߵ�ʱ����Ϊrelax״̬�����̵���ָ��Ϊ�㣬Ϊ�˱�֤һ������Ϊ�㣬�ʶ�����������give_current�ķ���
             if (toe_is_error(DBUSTOE))
             {
@@ -119,7 +119,7 @@ void chassis_task(void const *pvParameters)
 								steer_open();
 							}
 
-            }
+            //}
         }
 
 				last_big=now_big;
@@ -249,8 +249,8 @@ void chassis_rc_to_control_vector(fp32 *vx_set, fp32 *vy_set, chassis_move_t *ch
     rc_deadline_limit(chassis_move_rc_to_vector->chassis_RC->rc.ch[CHASSIS_X_CHANNEL], vx_channel, CHASSIS_RC_DEADLINE);
     rc_deadline_limit(chassis_move_rc_to_vector->chassis_RC->rc.ch[CHASSIS_Y_CHANNEL], vy_channel, CHASSIS_RC_DEADLINE);
 
-    vx_set_channel = vx_channel * CHASSIS_VX_RC_SEN;
-    vy_set_channel = vy_channel * -CHASSIS_VY_RC_SEN;
+    vx_set_channel = 0.4*vx_channel * CHASSIS_VX_RC_SEN;
+    vy_set_channel = 0.4*vy_channel * -CHASSIS_VY_RC_SEN;
 
     if (chassis_move_rc_to_vector->chassis_RC->key.v & CHASSIS_FRONT_KEY)
     {
@@ -302,6 +302,7 @@ static void chassis_set_contorl(chassis_move_t *chassis_move_control)
     fp32 vx_set = 0.0f, vy_set = 0.0f, wz_set = 0.0f;
     chassis_behaviour_control_set(&vx_set, &vy_set, &wz_set, chassis_move_control);
 
+		
     if (chassis_move_control->chassis_mode == CHASSIS_VECTOR_SPEED)
     {
         //���õ����˶����ٶ�

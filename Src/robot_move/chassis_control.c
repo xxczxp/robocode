@@ -15,10 +15,10 @@
 #include "semphr.h"
 #include "kalman.h"
 
-#define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 1.10537517e-4
-#define AB /*0.25f*/ 0.0405
-#define WHEEL_R 0.0072f
-#define ARG /*(CHASSIS_MOTOR_RPM_TO_VECTOR_SEN * WHEEL_R)*/ 4.089931e-4
+#define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 4.05366e-5
+#define AB /*0.25f*/ 0.405f
+#define WHEEL_R 0.075f
+#define ARG (CHASSIS_MOTOR_RPM_TO_VECTOR_SEN * WHEEL_R) 
 #define Pi acos(-1)
 
 
@@ -68,10 +68,10 @@ void chassis_motor_speed_update(chassis_move_t *chassis_move_update)
 
 void chassis_vector_to_mecanum_wheel_speed(const fp32 vx_set, const fp32 vy_set, const fp32 wz_set, fp32 wheel_speed[4])
 {
-    wheel_speed[0]=-(vx_set+vy_set+wz_set*AB);
-	wheel_speed[1]=vx_set-vy_set-wz_set*AB;
-	wheel_speed[2]=vx_set+vy_set-wz_set*AB;
-	wheel_speed[3]=-vx_set+vy_set-wz_set*AB;
+    wheel_speed[0]=-(vx_set-vy_set+wz_set*AB);
+	wheel_speed[1]=vx_set+vy_set-wz_set*AB;
+	wheel_speed[2]=vx_set-vy_set-wz_set*AB;
+	wheel_speed[3]=-vx_set-vy_set-wz_set*AB;
 
 
 }
@@ -186,12 +186,11 @@ void chassis_distance_calc_task(void const * argument)
 			y=(dv[0]- dv[1]+dv[2]-dv[3])/4;
 			theta=(dv[0]- dv[1]-dv[2]+dv[3])/(4*AB);
 
-			
-				distance_x+=(arm_cos_f32(distance_wz)*x-arm_sin_f32(distance_wz)*y);
-				distance_y+=(arm_sin_f32(distance_wz)*x+arm_cos_f32(distance_wz)*y);
+				distance_x+=(arm_cos_f32(chassis_move.chassis_yaw)*x-arm_sin_f32(chassis_move.chassis_yaw)*y);
+				distance_y+=(arm_sin_f32(chassis_move.chassis_yaw)*x+arm_cos_f32(chassis_move.chassis_yaw)*y);
 				distance_wz+=theta;
 		
-		kalman_use();
+		//kalman_use();
 		
 		imu_last=imu_angle[ANGLE_USE];
 			
@@ -240,6 +239,11 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
     }
 
 
+		*vx_set = 0;
+	*vy_set = 0;
+	*wz_set = 0;
+		
+		
 	current.x = distance_x;
 	current.y = distance_y;
 	current.w = 0;
@@ -376,7 +380,7 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 
 void chassis_PID_init(void){
     //�����ٶȻ�pidֵ
-    const static fp32 motor_speed_pid[3] = {M3505_MOTOR_SPEED_PID_KP, M3505_MOTOR_SPEED_PID_KI, M3505_MOTOR_SPEED_PID_KD};
+    const static fp32 motor_speed_pid[3] = {250000, M3505_MOTOR_SPEED_PID_KI, M3505_MOTOR_SPEED_PID_KD};
 
     const static fp32 chassis_rotation_pid[3] = {CHASSIS_ROTATION_PID_KP, CHASSIS_ROTATION_PID_KI, CHASSIS_ROTATION_PID_KD};
     //������ת��pidֵ
@@ -388,12 +392,12 @@ void chassis_PID_init(void){
     //��ʼ��PID �˶�
     for (i = 0; i < 4; i++)
     {
-        PID_Init(&chassis_move.motor_speed_pid[i], PID_POSITION, motor_speed_pid, M3505_MOTOR_SPEED_PID_MAX_OUT, M3505_MOTOR_SPEED_PID_MAX_IOUT);
+        PID_Init(&chassis_move.motor_speed_pid[i], PID_POSITION, motor_speed_pid, 1500, 1000);
     }
 
 
     //��ʼ����תPID
-    PID_Init(&chassis_move.chassis_rotation_pid, PID_POSITION, chassis_rotation_pid, CHASSIS_ROTATION_PID_MAX_OUT, CHASSIS_ROTATION_PID_MAX_IOUT);
+    PID_Init(&chassis_move.chassis_rotation_pid, PID_POSITION, chassis_rotation_pid, CHASSIS_ROTATION_PID_MAX_OUT, 800);
 
     PID_Init(&chassis_move.chassis_angle_pid, PID_POSITION, chassis_angle_pid, CHASSIS_ANGLE_PID_MAX_OUT, CHASSIS_ANGLE_PID_MAX_IOUT);
 
