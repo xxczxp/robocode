@@ -14,6 +14,7 @@
 #include "referee.h"
 #include "semphr.h"
 #include "kalman.h"
+#include "referee.h"
 
 #define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 1.10537517e-4
 #define AB /*0.25f*/ 0.0405
@@ -29,6 +30,8 @@ PidTypeDef auto_wz = {0, 0.5, 7e-10, 0.005, 1, 1};
 
 extern SemaphoreHandle_t apriltag_handle;
 extern int task_finish;
+extern summer_camp_info_t field_info;
+
 extern uint8_t chassis_odom_pack_solve(
   float x,
   float y,
@@ -54,7 +57,6 @@ float special_node[5][7] = {
 //�����˶�����
  chassis_move_t chassis_move;
  uint8_t usb_tx[128];
-
 
   // auto_control unpacked data
 extern chassis_ctrl_info_t ch_auto_control_data;
@@ -215,7 +217,7 @@ void chassis_distance_send_task(void const * argument)
 
     while(1)
     {
-        uint8_t send_len;
+//        uint8_t send_len;
         //send_len = chassis_odom_pack_solve( distance_x, distance_y, distance_wz, chassis_move.vx, chassis_move.vy, chassis_move.wz, chassis_move.chassis_gyro_z, chassis_move.chassis_yaw);
         osDelay(10);
     }
@@ -285,6 +287,7 @@ static unsigned char ucParameterToPass;
 int state=CMD_GET;
 int inner_state = move_target; 
 int is_create = 0;
+int W_C= 0;
 
 void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector){
 	
@@ -330,7 +333,7 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 		{
 			
 			//attention, this should be change!!!!
-				if((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz - target.w)<WZ_PASS_LIMIT))		{
+				if(field_info.region_occupy[1][2].belong == PLayer){
 				state=CMD_GET;
 				*vx_set=0;
 				*vy_set = 0;
@@ -347,30 +350,36 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 				xerr=pack.target.x-distance_x;
 				yerr=pack.target.y-distance_y;
 				
-				float dis=sqrt(xerr*xerr+yerr*yerr);
-				float right_degree  = (float)acos(xerr/dis);
-				if(asin(yerr/dis)<0)
-				right_degree=2*Pi-right_degree;
+				if(W_C == 0){			
+					float dis=sqrt(xerr*xerr+yerr*yerr);
+					float right_degree  = (float)acos(xerr/dis);
+					if(asin(yerr/dis)<0)
+					right_degree=2*Pi-right_degree;
 				
-				pack.target.w=right_degree;
+					pack.target.w=right_degree;
 				
-				werr=pack.target.w-distance_wz;
-				while(werr>Pi){
-					werr-=2*Pi;
+					werr=pack.target.w-distance_wz;
+					while(werr>Pi){
+						werr-=2*Pi;
+					}
+				
+					while(werr<-Pi){
+						werr+=2*Pi;
+					}
+				
+					W_C = 1;
+
 				}
 				
-				while(werr<-Pi){
-					werr+=2*Pi;
-				}
 				
-				current.w=pack.target.w+werr;
+//				current.w=pack.target.w+werr;
 				
 				PID_Calc_L(&auto_x, &auto_y, &pack.target, &current);
 				*vx_set =result[0];
 				*vy_set =result[1];
 				*wz_set=PID_Calc(&auto_wz,current.w,pack.target.w);
 					
-			}
+				}
 			
 			state = CMD_GET;
 			
@@ -378,14 +387,14 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 				
 		
 				case PUT_BALL :{
-					
+					W_C = 0;
 					is_create = 0;
 					
 					switch(inner_state){
 						
 						case move_target :{
 							
-							if((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz - target.w)<WZ_PASS_LIMIT)){
+							if(field_info.region_occupy[9][7].belong == PLayer){
 									inner_state=move_Sentry;
 									*vx_set=0;
 									*vy_set = 0;
@@ -394,7 +403,7 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 							
 						else{
 							
-							float werr;
+//							float werr;
 //								xerr,yerr;
 								current.x=distance_x;
 								current.y=distance_y;
@@ -524,6 +533,7 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 						 }
 						 else if(task_finish == 1){
 						   inner_state=move_target;
+							 			state = CMD_GET;
 						 }
 						 else{
 								;
@@ -531,9 +541,6 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 				 }break;
 			}
 		}break;
-				
-				state = CMD_GET;
-
 	}
 }
 
