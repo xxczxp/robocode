@@ -6,7 +6,7 @@
 
 typedef struct {
 	int loc[2];
-	double data[3];   //G H F
+	float data[3];   //G H F
 	int state;
 	int occupy;
 	int position;
