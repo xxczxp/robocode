@@ -85,6 +85,4 @@ Src/communication/.DS_Store
 MDK-ARM/RTE/RTE_Components.h
 Src/robot_move/.DS_Store
 MDK-ARM/.DS_Store
-*.orig
-*.h.orig
-*.c.orig
+s

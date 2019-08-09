@@ -12,7 +12,7 @@
 
 
 
-//µ×ÅÌµç»úËÙ¶È»·PID
+//ï¿½ï¿½ï¿½Ìµï¿½ï¿½ï¿½ï¿½Ù¶È»ï¿½PID
 
 #define M3505_MOTOR_SPEED_PID_KP 15000.0f
 #define M3505_MOTOR_SPEED_PID_KI 10.0f
@@ -23,7 +23,7 @@
 #define M2006_MOTOR_SPEED_PID_MAX_OUT MAX_MOTOR_CAN_CURRENT
 #define M2006_MOTOR_SPEED_PID_MAX_IOUT 2000.0f
 
-//µ×ÅÌÐý×ª¸úËæPID
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½PID
 #define CHASSIS_ROTATION_PID_KP 0.0f
 #define CHASSIS_ROTATION_PID_KI 0.0f
 #define CHASSIS_ROTATION_PID_KD 0.0f
@@ -32,7 +32,7 @@
 
 
 
-//µ×ÅÌÐý×ª¸úËæPID
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½PID
 #define CHASSIS_ANGLE_PID_KP 40.0f
 #define CHASSIS_ANGLE_PID_KI 0.0f
 #define CHASSIS_ANGLE_PID_KD 0.0f
@@ -60,9 +60,9 @@ typedef struct{
 	location_t target;
 	}auto_pack_t;
 
-	
+
 extern QueueHandle_t auto_queue;
-	
+
 typedef enum{
 	CMD_GET,
 	MOVE,
@@ -70,7 +70,7 @@ typedef enum{
 	PUT_BALL_MOVE,
 	STOP
 }STEP_AUTO_STATE;
-	
+
 typedef enum{
 	move_target,
 	move_Sentry,
