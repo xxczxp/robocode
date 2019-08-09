@@ -77,10 +77,11 @@ void steer_close(){
 	change_pwm(&ball_serve,STEER_CLOSE_ANGLE);
 }
 void OPCL_task(void const *pvParameters){
+	task_finish = 2;
 	steer_open();
 	vTaskDelay(500);
 	steer_close();
-	vTaskDelay(10);
+	task_finish = 1;
 	vTaskDelete(NULL);
 }
 	

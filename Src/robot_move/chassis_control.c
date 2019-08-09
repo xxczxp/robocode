@@ -279,56 +279,64 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
 	
 }
 
-static unsigned char ucParameterToPass;
 auto_pack_t next_cmd;
+
+static unsigned char ucParameterToPass;
 int state=CMD_GET;
 int inner_state = move_target; 
 int is_create = 0;
+
 void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector){
+	
 	static auto_pack_t pack;
+	
 	xTaskHandle C_O_T;
   xTaskHandle T_B_T;
+	xTaskHandle O_C_T;
+	
 	
 	switch(state){
 		case CMD_GET:
 		{ 
-			if(xQueueReceive(auto_queue,&pack,0)==pdPASS)
-			{		 
+			
+			if(xQueueReceive(auto_queue,&pack,0)==pdPASS){		 
+				
 				xQueuePeek(auto_queue,&next_cmd,10);
+				
 				if(pack.cmd==MOVE_CMD && next_cmd.cmd == PUT_BALL_CMD){
 					state=MOVE; 
-				  if(is_create == 0){
+				  
+					if(is_create == 0){
 						//xTaskCreate((TaskFunction_t)cup_out_task,"cup_out_task" , 512, &ucParameterToPass, 1, &C_O_T);	
 						xTaskCreate((TaskFunction_t)trans_ball_task, "trans_ball_task", 512, &ucParameterToPass, 1, &T_B_T);
 						is_create = 1;
 					}
-					else{
-						return;
-					}
+					
 				}
-				else if(pack.cmd==MOVE_CMD && next_cmd.cmd != PUT_BALL_CMD){
+				
+				else if(pack.cmd==MOVE_CMD && next_cmd.cmd == MOVE_CMD){
 					state=MOVE;
 				}
+				
 				else if(pack.cmd==PUT_BALL_CMD){
-					
-					
 					state=PUT_BALL;
 				}
-//				target.x = pack.target.x*0.93;
-//				target.y = pack.target.y*0.93;
 			}
+			
 		}break;
+		
+		
 			case MOVE:
 		{
 			
-				if((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz - target.w)<WZ_PASS_LIMIT))
-			{
-				
+			//attention, this should be change!!!!
+				if((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz - target.w)<WZ_PASS_LIMIT))		{
 				state=CMD_GET;
 				*vx_set=0;
 				*vy_set = 0;
 				*wz_set = 0;
 			}
+			
 			else{
 				
 				float werr,xerr,yerr;
@@ -342,7 +350,7 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 				float dis=sqrt(xerr*xerr+yerr*yerr);
 				float right_degree  = (float)acos(xerr/dis);
 				if(asin(yerr/dis)<0)
-					right_degree=2*Pi-right_degree;
+				right_degree=2*Pi-right_degree;
 				
 				pack.target.w=right_degree;
 				
@@ -350,9 +358,11 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 				while(werr>Pi){
 					werr-=2*Pi;
 				}
+				
 				while(werr<-Pi){
 					werr+=2*Pi;
 				}
+				
 				current.w=pack.target.w+werr;
 				
 				PID_Calc_L(&auto_x, &auto_y, &pack.target, &current);
@@ -361,22 +371,29 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 				*wz_set=PID_Calc(&auto_wz,current.w,pack.target.w);
 					
 			}
+			
 			state = CMD_GET;
+			
 		}break;
 				
+		
 				case PUT_BALL :{
+					
+					is_create = 0;
+					
 					switch(inner_state){
+						
 						case move_target :{
+							
 							if((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz - target.w)<WZ_PASS_LIMIT)){
 									inner_state=move_Sentry;
 									*vx_set=0;
 									*vy_set = 0;
 									*wz_set = 0;		
-								}								
-					
-							
+								}							
 							
 						else{
+							
 							float werr;
 //								xerr,yerr;
 								current.x=distance_x;
@@ -397,6 +414,7 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 							if (PLayer == 1){
 								target.w = special_node[3][pack.near];				
 							}
+							
 							else{
 								target.w = special_node[4][pack.near];
 							}
@@ -415,23 +433,25 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 							
 					}
 				}break;
+						
+				
 				    case move_Sentry:{
-							if((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz-target.w)<WZ_PASS_LIMIT))
-			{
-				
-				inner_state=release;
-				*vx_set=0;
-				*vy_set = 0;
-				*wz_set = 0;
-				
-			}
+							if((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz-target.w)<WZ_PASS_LIMIT)){
+								inner_state=release;
+								*vx_set=0;
+								*vy_set = 0;
+								*wz_set = 0;
+								}
+							
 							else{
+								
 							float xerr, yerr, werr;
 							current.x=distance_x;
 							current.y=distance_y;
 							current.w=distance_wz;
               
 							if(PLayer == 1){
+								
 								if(special_node[3][pack.near] == PI){
 								xerr=special_node[1][pack.near]-distance_x - 0.31;
 							  yerr=special_node[2][pack.near]-distance_y;}
@@ -447,9 +467,11 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 									else {
 								xerr=special_node[1][pack.near]-distance_x + 0.31;
 							  yerr=special_node[2][pack.near]-distance_y ;}	
+									
 							}
 							
 							else{
+								
 								if(special_node[4][pack.near] == PI){
 									xerr=special_node[1][pack.near]-distance_x - 0.31;
 									yerr=special_node[2][pack.near]-distance_y;}
@@ -464,100 +486,54 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 									
 								else {
 									xerr=special_node[1][pack.near]-distance_x + 0.31;
-									yerr=special_node[2][pack.near]-distance_y ;}	
+									yerr=special_node[2][pack.near]-distance_y ;}
+								
 							}
 							
 							float dis=sqrt(xerr*xerr+yerr*yerr);
 							float right_degree  = (float)acos(xerr/dis);
 							if(asin(yerr/dis)<0)
-								right_degree=2*Pi-right_degree;
+							right_degree=2*Pi-right_degree;
 				
 							pack.target.w=right_degree;
 				
 							werr=pack.target.w-distance_wz;
+							
 							while(werr>Pi){
 								werr-=2*Pi;
 								}
-							while(werr<-Pi){
+							
+								while(werr<-Pi){
 								werr+=2*Pi;
 							}
+							
 							current.w=pack.target.w+werr;
 				
 							PID_Calc_L(&auto_x, &auto_y, &pack.target, &current);
 							*vx_set =result[0];
 							*vy_set =result[1];
 							*wz_set=PID_Calc(&auto_wz,current.w,pack.target.w);
-						}
+								}
+							
 						}break;
+						
 						
 						case release:{
 						 if(task_finish == 0){
-							OPCL_task(NULL);
+							xTaskCreate((TaskFunction_t)OPCL_task, "open close clip", 128, NULL, 1, O_C_T);
 						 }
 						 else if(task_finish == 1){
 						   inner_state=move_target;
 						 }
-						}
+						 else{
+								;
+						 }
+				 }break;
 			}
 		}break;
+				
 				state = CMD_GET;
-//			if((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz-target.w)<WZ_PASS_LIMIT))
-//			{
-//				
-//				state=CMD_GET;
-//				*vx_set=0;
-//				*vy_set = 0;
-//				*wz_set = 0;
-//				
-//			}
-//			else{
-//				float werr,xerr,yerr;
-//				current.x=distance_x;
-//				current.y=distance_y;
-//				current.w=distance_wz;
-//				
-//				xerr=pack.target.x-distance_x;
-//				yerr=pack.target.y-distance_y;
-//				
-//				float dis=sqrt(xerr*xerr+yerr*yerr);
-//				float right_degree  = (float)acos(xerr/dis);
-//				if(asin(yerr/dis)<0)
-//					right_degree=2*Pi-right_degree;
-//				
-//				pack.target.w=right_degree;
-//				
-//				werr=pack.target.w-distance_wz;
-//				while(werr>Pi){
-//					werr-=2*Pi;
-//				}
-//				while(werr<-Pi){
-//					werr+=2*Pi;
-//				}
-//				current.w=pack.target.w+werr;
-//				
-//				PID_Calc_L(&auto_x, &auto_y, &pack.target, &current);
-//				*vx_set =result[0];
-//				*vy_set =result[1];
-//				*wz_set=PID_Calc(&auto_wz,current.w,target.w);
-//			}
-		
-		
-//		case  PUT_BALL_MOVE:
-//		{
-//			switch (inner_state){
-//				case move_target :
-//					{
 
-//				}break;
-//			}
-			
-		
-		
-		
-		
-		
-		
-//		}
 	}
 }
 
