@@ -25,6 +25,7 @@
  * 1 tab == 4 spaces!
  */
 
+#include "mpu_wrappers.h"
 
 #ifndef INC_TASK_H
 #define INC_TASK_H

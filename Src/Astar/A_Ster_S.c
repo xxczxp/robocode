@@ -7,7 +7,7 @@
 
 int player = RED;
 int enemy;
-
+QueueHandle_t point_queue;
 int last_G;
 int value_F = 10000;
 int way_n = 0;
@@ -126,7 +126,7 @@ target_node.loc[1] = 4;
 }
 
 void updata(summer_camp_info_t* field_info){
-	int list_num = 0;
+//	int list_num = 0;
 	int x = field_info->car_location[enemy]>>4;
 	int y = field_info->car_location[enemy] & 0xf;
 	space_A[x][y].state = CLOSE;
@@ -378,7 +378,7 @@ void take_a_step(node_t c_n){
 			pack.cup_num = cup_num;
 			pack.ball_num  = ball_num;
 			}
-			xQueueReceive(auto_queue,&pack,0);
+			xQueueReceive(auto_queue,&pack,5);
 		}
 	
 		else if(current_node.spr == 1 && time<5){
@@ -389,7 +389,7 @@ void take_a_step(node_t c_n){
 			pack.target.x = last_node.loc[0];
 			pack.target.y = last_node.loc[1];
 			pack.target.w = 0;
-			xQueueReceive(auto_queue,&pack,0);
+			xQueueReceive(auto_queue,&pack,5);
 	}
 		else if(current_node.spr != 1 && time>3){
 			auto_pack_t pack;
@@ -399,7 +399,7 @@ void take_a_step(node_t c_n){
 			pack.target.x = current_node.loc[0];
 			pack.target.y = current_node.loc[1];
 			pack.target.w = 0;
-			xQueueReceive(auto_queue,&pack,0);
+			xQueueReceive(auto_queue,&pack,5);
 	 }
 		else{
 			auto_pack_t pack;
@@ -409,7 +409,7 @@ void take_a_step(node_t c_n){
 			pack.target.x = last_node.loc[0];
 			pack.target.y = last_node.loc[1];
 			pack.target.w = 0;
-			xQueueReceive(auto_queue,&pack,0);
+			xQueueReceive(auto_queue,&pack,5);
 		}
 }
 	else{
@@ -434,7 +434,7 @@ void take_a_step(node_t c_n){
 			pack.ball_num = ball_num;
 			}
 						
-			xQueueReceive(auto_queue,&pack,0);
+			xQueueReceive(auto_queue,&pack,5);
 			}
 		else if(current_node.spr == 1 && time<5){
 			auto_pack_t pack;
@@ -444,7 +444,7 @@ void take_a_step(node_t c_n){
 			pack.target.x = last_node.loc[0];
 			pack.target.y = last_node.loc[1];
 			pack.target.w = 0;
-			xQueueReceive(auto_queue,&pack,0);
+			xQueueReceive(auto_queue,&pack,5);
 			}
 		else if(current_node.spr != 1 && time>3){
 			auto_pack_t pack;
@@ -454,7 +454,7 @@ void take_a_step(node_t c_n){
 			pack.target.x = current_node.loc[0];
 			pack.target.y = current_node.loc[1];
 			pack.target.w = 0;
-			xQueueReceive(auto_queue,&pack,0);
+			xQueueReceive(auto_queue,&pack,5);
 	}
 		else{
 			auto_pack_t pack;
@@ -464,7 +464,7 @@ void take_a_step(node_t c_n){
 			pack.target.x = last_node.loc[0];
 			pack.target.y = last_node.loc[1];
 			pack.target.w = 0;
-			xQueueReceive(auto_queue,&pack,0);
+			xQueueReceive(auto_queue,&pack,5);
 		}
 	}
 }
@@ -489,12 +489,16 @@ void deInit(){
 void A_star(){
 	get_enemy();
 	node_Init();
-	while(field_info.round_remain_cnt > 0){
+	if(field_info.round_remain_cnt > 0){
 	updata(&field_info);
 	take_a_step(current_node);
 	deInit();
   updata(&field_info);
   }
+	else{
+		auto_pack_t pack;
+		pack.cmd = STOP;
+		xQueueReceive(auto_queue,&pack,5);
+	}
 }
-
 

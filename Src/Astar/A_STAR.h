@@ -39,7 +39,8 @@ typedef struct {
 	int spb;
 	int near;
 }node_t;
-	
+
+extern int player;
 extern void A_Star(int player_color);
 
 #endif

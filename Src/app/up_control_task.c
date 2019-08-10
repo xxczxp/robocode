@@ -1,6 +1,8 @@
 #include "up_control_task.h"
 #include "pwm.h"
 #include <math.h>
+#include "freeRTOS.h"
+#include "task.h"
 
 #include "pid.h"
 #include "CAN_receive.h"
@@ -11,7 +13,7 @@
 #define OB_INDEX 0
 #define PULL_INDEX 1
 #define UP_MOTOR_NUM 3
-#define PI acos(-1)
+//#define PI 3.1415926
 
 PidTypeDef up_motor_speed_pid[UP_MOTOR_NUM]={PID_POSITION,M3505_MOTOR_SPEED_PID_KP, M3505_MOTOR_SPEED_PID_KI, M3505_MOTOR_SPEED_PID_KD};
 PidTypeDef up_motor_position_pid[UP_MOTOR_NUM]={PID_POSITION,100,0,0};
@@ -170,20 +172,21 @@ void up_task(void const *pvParameters){
 	
 }
 
-int timer_state_sign;
+//int timer_state_sign;
 
 xTaskHandle p_timer_handle;
 
 void timer_delay_task(void const *pvParameters){
 	vTaskDelay(*(uint32_t*)pvParameters);
-	timer_state_sign=1;
+	//timer_state_sign=1;
+	vTaskDelete(NULL);
 }
-
-void timer_start(uint32_t time){
-	timer_state_sign=0;
+uint32_t mtime;
+void timer_start(int time){
+	//timer_state_sign=0;
 	xTaskCreate((TaskFunction_t)timer_delay_task,"timer_peng",128,&time,osPriorityHigh,p_timer_handle);
 }
 
-int timer_is_finish(){
-	return timer_state_sign;
-}
+//int timer_is_finish(){
+//	return timer_state_sign;
+//}

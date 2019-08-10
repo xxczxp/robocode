@@ -16,6 +16,8 @@
 #include "kalman.h"
 #include "referee.h"
 #include "A_STAR.h"
+#include "freeRTOS.h"
+#include "task.h"
 
 #define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 4.05366e-4
 #define AB /*0.25f*/ 0.405
@@ -62,6 +64,13 @@ float special_node[5][7] = {
 
   // auto_control unpacked data
 extern chassis_ctrl_info_t ch_auto_control_data;
+
+void reset_queue(){
+  QueueHandle_t temp_queue;
+	temp_queue = xQueueCreate(15, sizeof(auto_pack_t));
+	auto_queue = temp_queue;
+	vQueueDelete(temp_queue);
+}
 
 //real auto_control
 QueueHandle_t auto_queue;
@@ -285,6 +294,8 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
 	
 }
 
+//extern int timer_state_sign;
+extern xTaskHandle p_timer_handle;
 
 auto_pack_t next_cmd;
 
@@ -302,8 +313,8 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 	//xTaskHandle C_O_T;
   xTaskHandle T_B_T;
 	xTaskHandle O_C_T;
-	xTaskHandle C_T_C;
-	xTaskHandle U_T_C;
+//	xTaskHandle C_T_C;
+//	xTaskHandle U_T_C;
 	
 	
 	
@@ -340,11 +351,11 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 		
 			case MOVE:
 		{
-		   if (LGBT ==0){
-					xTaskCreate((TaskFunction_t)Timer_task, "timer", 128, &ucParameterToPass, 1, C_T_C);
+		   if (eTaskGetState( p_timer_handle) != eRunning && eTaskGetState( p_timer_handle) != eReady && eTaskGetState( p_timer_handle) != eSuspended ){
+				timer_start(2000);
 			 }
-       else if(LGBT == 2)	{
-			 state = CMD_GET;
+       else if(eTaskGetState( p_timer_handle) == eDeleted)	{
+				state = CMD_GET;
 			 }	 
 			//attention, this should be change!!!!       ———— that's fine~
 				if(field_info.region_occupy[(int)pack.target.x][(int)pack.target.y].belong == player){
@@ -395,9 +406,7 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 					
 				}
 			
-			state = CMD_GET;
-				
-			
+			state = CMD_GET;	
 			
 		}break;
 				
@@ -410,12 +419,12 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 						
 						case move_target :{
 							
-							if (LGBT == 2){
-						xTaskCreate((TaskFunction_t)un_timer_task, "timer", 128, NULL, 1, U_T_C);
-					}
-					else if (LGBT == 0){
-						inner_state = move_Sentry;
-					}
+							if (eTaskGetState( p_timer_handle) != eRunning && eTaskGetState( p_timer_handle) != eReady && eTaskGetState( p_timer_handle) != eSuspended ){
+								timer_start(2000);
+										}
+							else if(eTaskGetState( p_timer_handle) == eDeleted)	{
+								state = CMD_GET;
+										}	 
 							
 							if(field_info.region_occupy[(int)pack.target.x][(int)pack.target.y].belong == player){
 									inner_state=move_Sentry;

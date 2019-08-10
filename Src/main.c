@@ -172,8 +172,7 @@ SemaphoreHandle_t apriltag_handle;
   */
 
 
-
-float a = 0;
+int a;
 
 int main(void)
 {
@@ -228,8 +227,6 @@ int main(void)
   /* USER CODE BEGIN 2 */
     remote_control_init();
     cali_param_init();
-	
-	pwm_all_init();
 
     power_ctrl_on(0);
     HAL_Delay(137);
@@ -278,7 +275,7 @@ int main(void)
 	auto_queue = xQueueCreate(AUTO_RECIVE_BUFFER_SIZE, sizeof(auto_pack_t));
 
 	xTaskCreate((TaskFunction_t)referee_send_task, "send_task", 256, NULL, osPriorityHigh, &referee_send_handle);
-
+	
 	xTaskCreate((TaskFunction_t)up_task, "send_task", 256, NULL, osPriorityHigh, &up_control_taskHandle);
 
   /* Create the thread(s) */

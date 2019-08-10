@@ -104,6 +104,9 @@ void chassis_task(void const *pvParameters)
                 CAN_CMD_CHASSIS(chassis_move.motor_chassis[0].give_current, chassis_move.motor_chassis[1].give_current,
                                 chassis_move.motor_chassis[2].give_current, chassis_move.motor_chassis[3].give_current);
             }
+						if(chassis_move.chassis_RC->rc.s[1] == 3){
+							reset_queue();
+						}
         }
         //œµÕ≥—” ±
         vTaskDelay(CHASSIS_CONTROL_TIME_MS);
