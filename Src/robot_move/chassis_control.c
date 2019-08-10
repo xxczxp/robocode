@@ -296,7 +296,7 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
 
 //extern int timer_state_sign;
 extern xTaskHandle p_timer_handle;
-
+extern int timer_state_sign;
 auto_pack_t next_cmd;
 
 static unsigned char ucParameterToPass;
@@ -305,11 +305,46 @@ int inner_state = move_target;
 int is_create = 0;
 int W_C= 0;
 
+void cacu_w(location_t tar,location_t cur){
+	float werr,xerr,yerr;
+				
+				
+		xerr=tar.x-cur.x;
+		yerr=tar.y-cur.y;
+	float dis=sqrt(xerr*xerr+yerr*yerr);
+					float right_degree  = (float)acos(xerr/dis);
+					if(asin(yerr/dis)<0)
+					right_degree=2*Pi-right_degree;
+				
+					tar.w=right_degree;
+				
+					
+	
+	
+}
+
+void normal_werr(float *werr){
+	while(*werr>Pi){
+						*werr-=2*Pi;
+					}
+				
+					while(*werr<-Pi){
+						*werr+=2*Pi;
+					}
+}
+
+#define DIS_OUT 0.31
+
 void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector){
 	
 	static auto_pack_t pack;
-	target.x = pack.target.x *0.93;
-	target.y = pack.target.y * 0.93;
+	target.x = pack.target.x *0.93+0.93/2.0;
+	target.y = pack.target.y * 0.93+0.93/2.0;
+	
+	current.x=distance_x;
+				current.y=distance_y;
+				current.w=distance_wz;
+	
 	//xTaskHandle C_O_T;
   xTaskHandle T_B_T;
 	xTaskHandle O_C_T;
@@ -325,24 +360,25 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 			if(xQueueReceive(auto_queue,&pack,0)==pdPASS){		 
 				
 				xQueuePeek(auto_queue,&next_cmd,10);
+				timer_start(5000);
 				
-				if(pack.cmd==MOVE_CMD && next_cmd.cmd == PUT_BALL_CMD){
-					state=MOVE; 
-				  
-					
-						//xTaskCreate((TaskFunction_t)cup_out_task,"cup_out_task" , 512, &ucParameterToPass, 1, &C_O_T);	
+				
+				cacu_w(target,current);
+				
+				
+				if(next_cmd.cmd == PUT_BALL_CMD)
+				{
+					//xTaskCreate((TaskFunction_t)cup_out_task,"cup_out_task" , 512, &ucParameterToPass, 1, &C_O_T);	
 						xTaskCreate((TaskFunction_t)trans_ball_task, "trans_ball_task", 512, &ucParameterToPass, 1, &T_B_T);
 						
-					
-					
 				}
-				
-				else if(pack.cmd==MOVE_CMD && next_cmd.cmd == MOVE_CMD){
+				if(pack.cmd==MOVE_CMD){
 					state=MOVE;
 				}
 				
 				else if(pack.cmd==PUT_BALL_CMD){
 					state=PUT_BALL;
+					inner_state=move_target;
 				}
 			}
 			
@@ -351,14 +387,10 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 		
 			case MOVE:
 		{
-		   if (eTaskGetState( p_timer_handle) != eRunning && eTaskGetState( p_timer_handle) != eReady && eTaskGetState( p_timer_handle) != eSuspended ){
-				timer_start(2000);
-			 }
-       else if(eTaskGetState( p_timer_handle) == eDeleted)	{
-				state = CMD_GET;
-			 }	 
+		   
+       
 			//attention, this should be change!!!!       ———— that's fine~
-				if(field_info.region_occupy[(int)pack.target.x][(int)pack.target.y].belong == player){
+				if(field_info.region_occupy[(int)pack.target.x][(int)pack.target.y].belong == player || timer_state_sign){
 				state=CMD_GET;
 				*vx_set=0;
 				*vy_set = 0;
@@ -367,44 +399,19 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 			
 			else{
 				
-				float werr,xerr,yerr;
-				current.x=distance_x;
-				current.y=distance_y;
-				current.w=distance_wz;
-				
-				xerr=target.x-distance_x;
-				yerr=target.y-distance_y;
-				
-				if(W_C == 0){			
-					float dis=sqrt(xerr*xerr+yerr*yerr);
-					float right_degree  = (float)acos(xerr/dis);
-					if(asin(yerr/dis)<0)
-					right_degree=2*Pi-right_degree;
-				
-					target.w=right_degree;
-				
-					werr=pack.target.w-distance_wz;
-					while(werr>Pi){
-						werr-=2*Pi;
-					}
-				
-					while(werr<-Pi){
-						werr+=2*Pi;
-					}
-				
-					W_C = 1;
+				float werr;
 
-				}
-				
-				
-//				current.w=pack.target.w+werr;
+				werr=pack.target.w-distance_wz;
+					normal_werr(&werr);
+				current.w=pack.target.w+werr;
 				
 				PID_Calc_L(&auto_x, &auto_y, &target, &current);
 				*vx_set =result[0];
 				*vy_set =result[1];
 				*wz_set=PID_Calc(&auto_wz,current.w,target.w);
 					
-				}
+				
+			}
 			
 			state = CMD_GET;	
 			
@@ -418,15 +425,7 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 					switch(inner_state){
 						
 						case move_target :{
-							
-							if (eTaskGetState( p_timer_handle) != eRunning && eTaskGetState( p_timer_handle) != eReady && eTaskGetState( p_timer_handle) != eSuspended ){
-								timer_start(2000);
-										}
-							else if(eTaskGetState( p_timer_handle) == eDeleted)	{
-								state = CMD_GET;
-										}	 
-							
-							if(field_info.region_occupy[(int)pack.target.x][(int)pack.target.y].belong == player){
+							if(field_info.region_occupy[(int)pack.target.x][(int)pack.target.y].belong == player || timer_state_sign){
 									inner_state=move_Sentry;
 									*vx_set=0;
 									*vy_set = 0;
@@ -437,9 +436,6 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 							
 //							float werr;
 //								xerr,yerr;
-								current.x=distance_x;
-								current.y=distance_y;
-								current.w=distance_wz;
 					
 //							xerr=pack.target.x-distance_x;
 //							yerr=pack.target.y-distance_y;
@@ -459,6 +455,13 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 							else{
 								target.w = special_node[4][pack.near];
 							}
+							
+							float werr;
+
+				werr=pack.target.w-distance_wz;
+					normal_werr(&werr);
+				current.w=pack.target.w+werr;
+
 //							while(werr>Pi){
 //								werr-=2*Pi;
 //							}
@@ -486,27 +489,24 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 							
 							else{
 								
-							float xerr, yerr, werr;
-							current.x=distance_x;
-							current.y=distance_y;
-							current.w=distance_wz;
+							float werr;
               
 							if(player == 1){
 								
 								if(special_node[3][pack.near] == PI){
-								xerr=special_node[1][pack.near]-distance_x - 0.31;
+								xerr=special_node[1][pack.near]-distance_x - DIS_OUT;
 							  yerr=special_node[2][pack.near]-distance_y;}
 							
 								else if( special_node[3][pack.near] == PI/2){
 								xerr=special_node[1][pack.near]-distance_x;
-							  yerr=special_node[2][pack.near]-distance_y - 0.31;}
+							  yerr=special_node[2][pack.near]-distance_y - DIS_OUT;}
 								
 									else if( special_node[3][pack.near] == 0){
 								xerr=special_node[1][pack.near]-distance_x;
-							  yerr=special_node[2][pack.near]-distance_y + 0.31;}
+							  yerr=special_node[2][pack.near]-distance_y + DIS_OUT;}
 									
 									else {
-								xerr=special_node[1][pack.near]-distance_x + 0.31;
+								xerr=special_node[1][pack.near]-distance_x + DIS_OUT;
 							  yerr=special_node[2][pack.near]-distance_y ;}	
 									
 							}

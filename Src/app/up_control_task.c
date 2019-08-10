@@ -9,6 +9,7 @@
 #include "chassis_task.h"
 #include "Detect_Task.h"
 
+
 #define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 2.13081e-5
 #define OB_INDEX 0
 #define PULL_INDEX 1
@@ -172,18 +173,22 @@ void up_task(void const *pvParameters){
 	
 }
 
-//int timer_state_sign;
+int timer_state_sign;
 
 xTaskHandle p_timer_handle;
 
 void timer_delay_task(void const *pvParameters){
 	vTaskDelay(*(uint32_t*)pvParameters);
-	//timer_state_sign=1;
+	timer_state_sign=1;
 	vTaskDelete(NULL);
 }
 uint32_t mtime;
 void timer_start(int time){
-	//timer_state_sign=0;
+	timer_state_sign=0;
+	if(eTaskGetState( p_timer_handle) != eRunning && eTaskGetState( p_timer_handle) != eReady && eTaskGetState( p_timer_handle) != eSuspended )
+		;
+	else
+		vTaskDelete(p_timer_handle);
 	xTaskCreate((TaskFunction_t)timer_delay_task,"timer_peng",128,&time,osPriorityHigh,p_timer_handle);
 }
 
