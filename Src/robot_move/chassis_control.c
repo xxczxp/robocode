@@ -315,11 +315,11 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 				if(pack.cmd==MOVE_CMD && next_cmd.cmd == PUT_BALL_CMD){
 					state=MOVE; 
 				  
-					if(is_create == 0){
+					
 						//xTaskCreate((TaskFunction_t)cup_out_task,"cup_out_task" , 512, &ucParameterToPass, 1, &C_O_T);	
 						xTaskCreate((TaskFunction_t)trans_ball_task, "trans_ball_task", 512, &ucParameterToPass, 1, &T_B_T);
-						is_create = 1;
-					}
+						
+					
 					
 				}
 				
@@ -401,7 +401,7 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 		
 				case PUT_BALL :{
 				//	W_C = 0;
-					is_create = 0;
+					
 				
 					switch(inner_state){
 						

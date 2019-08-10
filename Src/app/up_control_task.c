@@ -169,3 +169,21 @@ void up_task(void const *pvParameters){
 	
 	
 }
+
+int timer_state_sign;
+
+xTaskHandle p_timer_handle;
+
+void timer_delay_task(void const *pvParameters){
+	vTaskDelay(*(uint32_t*)pvParameters);
+	timer_state_sign=1;
+}
+
+void timer_start(uint32_t time){
+	timer_state_sign=0;
+	xTaskCreate((TaskFunction_t)timer_delay_task,"timer_peng",128,&time,osPriorityHigh,p_timer_handle);
+}
+
+int timer_is_finish(){
+	return timer_state_sign;
+}
