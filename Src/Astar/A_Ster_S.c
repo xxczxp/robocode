@@ -5,32 +5,6 @@
 #include <math.h>
 #include "chassis_control.h"
 
-//player 
-#define RED  1
-#define BLUE  2 
-
-//state
-//#define OPEN 1
-#define CLOSE 0
-#define OPEN 2
-
-//occupy
-#define FREE 0
-#define OCCUPY 1
-
-//position
-#define FORWARD 0
-#define OBLIQUE 1
-#define EMPTY NULL
-
-//change
-#define CHANGE 1
-#define RESET 0
-
-//field state
-#define WEAK 1
-#define STRONG 2
-
 int player = RED;
 int enemy;
 
@@ -45,7 +19,7 @@ node_t last_node;
 node_t target_node;
 node_t start;
 node_t space_A[9][7];
-node_t have_robot[3];
+node_t have_robot;
 node_t open[8];
 node_t path_way[15];
 node_t placeholder;
@@ -67,7 +41,7 @@ void node_Init(){
 		for(int z = 0; z < 7; z++){
 			node_t a;
 			
-			a.change = RESET;
+			a.change = INVARIANT;
 			
 			a.loc[0] = h;
 			a.loc[1] = z;
@@ -145,7 +119,7 @@ placeholder.state = OPEN;
 placeholder.data[2] = 1000000;
 placeholder.occupy = FREE;
 
-target_node.data[0] = 100000;
+target_node.data[0] = 1000000;
 target_node.loc[0] = 5;
 target_node.loc[1] = 4;
 
@@ -153,17 +127,20 @@ target_node.loc[1] = 4;
 
 void updata(summer_camp_info_t* field_info){
 	int list_num = 0;
+	int x = field_info->car_location[enemy]>>4;
+	int y = field_info->car_location[enemy] & 0xf;
+	space_A[x][y].state = CLOSE;
 	
 	for(int i = 0;  i < 9;  i ++ ){
 		for(int j = 0; j < 7; j++){
-			if(field_info -> region_occupy[i][j].have_robot == 1){
-				have_robot[list_num] = space_A[i][j];
-				space_A[i][j].state = CLOSE;
-			}	
+//			if(field_info -> region_occupy[i][j].have_robot == 1){
+//				have_robot = space_A[i][j];
+//				space_A[i][j].state = CLOSE;
+//			}	
 			
-			if(field_info -> region_occupy[i][j].belong == player ){
+			if(field_info -> region_occupy[i][j].belong == player && space_A[i][j].change ==INVARIANT){
 				space_A[i][j].data[0] +=2;
-				  
+				space_A[i][j].change = CHANGE;
 				switch(player){
 					case RED : {
 						if(space_A[i][j].spr == 1){
@@ -367,10 +344,12 @@ void take_a_step(node_t c_n){
 	open[i].data[2] = open[i].data[0] + open[i].data[1];	
 
 	if(open[i].data[2] < value_F){
+		last_G = open[i].data[0];
 		value_F = open[i].data[2];
 		current_node = open[i];
 	}
 	else{
+		last_G = last_G;
 		value_F = value_F;
 		current_node = current_node;
 	}
@@ -495,20 +474,27 @@ void deInit(){
 	for(int i = 0; i < 9; i++){
 		for(int j = 0; j < 7; j++){
 		space_A[i][j].state = OPEN;
+		space_A[i][j].state = INVARIANT;
 		}
 	}
+	space_A[0][3].state = CLOSE;
+	space_A[2][0].state = CLOSE;
+	space_A[2][6].state = CLOSE;
+	space_A[4][3].state = CLOSE;
+	space_A[6][0].state = CLOSE;
+	space_A[6][6].state = CLOSE;
+	space_A[8][3].state = CLOSE;
 }
 
 void A_star(){
 	get_enemy();
 	node_Init();
-	int i = 15;
-	while(i > 0){
+	while(field_info.round_remain_cnt > 0){
 	updata(&field_info);
 	take_a_step(current_node);
 	deInit();
-  i--;
-}
+  updata(&field_info);
+  }
 }
 
 

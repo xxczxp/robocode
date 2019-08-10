@@ -18,6 +18,7 @@ PidTypeDef up_motor_position_pid[UP_MOTOR_NUM]={PID_POSITION,100,0,0};
 
 float motor_mearsure_bias[UP_MOTOR_NUM];
 
+int LGBT = 0;
 int task_finish = 0;
 
 const motor_measure_t *motor_measure_ptr;
@@ -82,6 +83,20 @@ void OPCL_task(void const *pvParameters){
 	vTaskDelay(500);
 	steer_close();
 	task_finish = 1;
+	vTaskDelete(NULL);
+}
+
+void Timer_task(void const *pvParameters){
+	LGBT = 1;
+	vTaskDelay(2000);
+	LGBT = 2;
+	vTaskDelete(NULL);
+}
+
+void un_timer_task(void const *pvParameters){
+	LGBT = 1;
+	vTaskDelay(2000);
+	LGBT = 0;
 	vTaskDelete(NULL);
 }
 	
