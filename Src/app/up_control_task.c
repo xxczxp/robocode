@@ -1,6 +1,8 @@
 #include "up_control_task.h"
 #include "pwm.h"
 #include <math.h>
+#include "freeRTOS.h"
+#include "task.h"
 
 #include "pid.h"
 #include "CAN_receive.h"
@@ -170,21 +172,21 @@ void up_task(void const *pvParameters){
 	
 }
 
-int timer_state_sign;
+//int timer_state_sign;
 
 xTaskHandle p_timer_handle;
 
 void timer_delay_task(void const *pvParameters){
 	vTaskDelay(*(uint32_t*)pvParameters);
-	timer_state_sign=1;
+	//timer_state_sign=1;
+	vTaskDelete(NULL);
 }
 uint32_t mtime;
 void timer_start(int time){
-	timer_state_sign=0;
-	mtime=(uint32_t)time;
-	xTaskCreate((TaskFunction_t)timer_delay_task,"timer_peng",128,&mtime,osPriorityHigh,p_timer_handle);
+	//timer_state_sign=0;
+	xTaskCreate((TaskFunction_t)timer_delay_task,"timer_peng",128,&time,osPriorityHigh,p_timer_handle);
 }
 
-int timer_is_finish(){
-	return timer_state_sign;
-}
+//int timer_is_finish(){
+//	return timer_state_sign;
+//}
