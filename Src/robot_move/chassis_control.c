@@ -283,6 +283,7 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
 	
 }
 
+extern int timer_state_sign;
 
 auto_pack_t next_cmd;
 
@@ -337,10 +338,10 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 		
 			case MOVE:
 		{
-		   if (LGBT ==0){
-					xTaskCreate((TaskFunction_t)Timer_task, "timer", 128, &ucParameterToPass, 1, C_T_C);
+		   if (timer_state_sign ==0){
+				timer_start(2000);
 			 }
-       else if(LGBT == 2)	{
+       else if(timer_state_sign == 1)	{
 			 state = CMD_GET;
 			 }	 
 			//attention, this should be change!!!!       ———— that's fine~

@@ -11,7 +11,7 @@
 #define OB_INDEX 0
 #define PULL_INDEX 1
 #define UP_MOTOR_NUM 3
-#define PI acos(-1)
+//#define PI 3.1415926
 
 PidTypeDef up_motor_speed_pid[UP_MOTOR_NUM]={PID_POSITION,M3505_MOTOR_SPEED_PID_KP, M3505_MOTOR_SPEED_PID_KI, M3505_MOTOR_SPEED_PID_KD};
 PidTypeDef up_motor_position_pid[UP_MOTOR_NUM]={PID_POSITION,100,0,0};
@@ -178,10 +178,11 @@ void timer_delay_task(void const *pvParameters){
 	vTaskDelay(*(uint32_t*)pvParameters);
 	timer_state_sign=1;
 }
-
-void timer_start(uint32_t time){
+uint32_t mtime;
+void timer_start(int time){
 	timer_state_sign=0;
-	xTaskCreate((TaskFunction_t)timer_delay_task,"timer_peng",128,&time,osPriorityHigh,p_timer_handle);
+	mtime=(uint32_t)time;
+	xTaskCreate((TaskFunction_t)timer_delay_task,"timer_peng",128,&mtime,osPriorityHigh,p_timer_handle);
 }
 
 int timer_is_finish(){

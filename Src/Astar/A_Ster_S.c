@@ -126,7 +126,7 @@ target_node.loc[1] = 4;
 }
 
 void updata(summer_camp_info_t* field_info){
-	int list_num = 0;
+//	int list_num = 0;
 	int x = field_info->car_location[enemy]>>4;
 	int y = field_info->car_location[enemy] & 0xf;
 	space_A[x][y].state = CLOSE;
@@ -496,5 +496,4 @@ void A_star(){
   updata(&field_info);
   }
 }
-
 
