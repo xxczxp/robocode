@@ -124,11 +124,13 @@ void kalman_use(void){
 //				distance_x=distance_y*0.5+apriltap_data.y*0.5;
 //				distance_x=distance_wz*0.5+apriltap_data.wz*0.5;
 				angle_sim(imu_angle[ANGLE_USE]-imu_last+distance_wz,&distance_wz);
-				distance_wz=feiman_update(&wz_feiman,distance_wz,imu_angle[ANGLE_USE]-imu_last+distance_wz);
+				distance_wz=feiman_update(&wz_feiman,distance_wz,chassis_move.chassis_yaw-imu_last+distance_wz);
 				distance_x=kalman_update(&pos_kalman[0],distance_x,apriltap_data.x);
 				distance_y=kalman_update(&pos_kalman[1],distance_y,apriltap_data.y);
 				angle_sim(apriltap_data.wz,&distance_wz);
+				pos_kalman[2].v_pre=wz_feiman.v_now;
 				distance_wz=kalman_update(&pos_kalman[2],distance_wz,apriltap_data.wz);
+				wz_feiman.v_now=pos_kalman[2].v_pre;
 
 			}
 			
@@ -136,7 +138,7 @@ void kalman_use(void){
 				pos_kalman[0].v_pre+=pos_kalman[0].v_noise_pre;
 			pos_kalman[1].v_pre+=pos_kalman[1].v_noise_pre;
 				angle_sim(imu_angle[ANGLE_USE]-imu_last+distance_wz,&distance_wz);
-			distance_wz=feiman_update(&wz_feiman,distance_wz,imu_angle[ANGLE_USE]-imu_last+distance_wz);
+			distance_wz=feiman_update(&wz_feiman,distance_wz,chassis_move.chassis_yaw-imu_last+distance_wz);
 				
 			}
 			
@@ -146,7 +148,7 @@ void kalman_use(void){
 			pos_kalman[0].v_pre+=pos_kalman[0].v_noise_pre;
 			pos_kalman[1].v_pre+=pos_kalman[1].v_noise_pre;
 			angle_sim(imu_angle[ANGLE_USE]-imu_last+distance_wz,&distance_wz);
-			distance_wz=feiman_update(&wz_feiman,distance_wz,imu_angle[ANGLE_USE]-imu_last+distance_wz);
+			distance_wz=feiman_update(&wz_feiman,distance_wz,chassis_move.chassis_yaw-imu_last+distance_wz);
 		}
 }
 
@@ -164,7 +166,7 @@ void chassis_distance_calc_task(void const * argument)
 	wz_feiman.v_1=0;
 	wz_feiman.v_2=0;
 	imu_angle=get_INS_angle_point();
-	imu_last=imu_angle[ANGLE_USE];
+	imu_last=chassis_move.chassis_yaw;
 	
 	
 	
@@ -204,7 +206,7 @@ void chassis_distance_calc_task(void const * argument)
 		
 		kalman_use();
 		
-		imu_last=imu_angle[ANGLE_USE];
+		imu_last=chassis_move.chassis_yaw;
 			
 		//if(switch_is_mid(chassis_move_mode->chassis_RC->rc.s[MODE_CHANNEL]))
 
@@ -302,6 +304,7 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 	xTaskHandle O_C_T;
 	xTaskHandle C_T_C;
 	xTaskHandle U_T_C;
+	
 	
 	
 	switch(state){
