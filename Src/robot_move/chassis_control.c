@@ -65,6 +65,13 @@ float special_node[5][7] = {
   // auto_control unpacked data
 extern chassis_ctrl_info_t ch_auto_control_data;
 
+void reset_queue(){
+  QueueHandle_t temp_queue;
+	temp_queue = xQueueCreate(15, sizeof(auto_pack_t));
+	auto_queue = temp_queue;
+	vQueueDelete(temp_queue);
+}
+
 //real auto_control
 QueueHandle_t auto_queue;
 void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector);
@@ -341,7 +348,7 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 		
 			case MOVE:
 		{
-		   if (eTaskGetState( p_timer_handle) == eInvalid){
+		   if (eTaskGetState( p_timer_handle) != eRunning && eTaskGetState( p_timer_handle) != eReady && eTaskGetState( p_timer_handle) != eSuspended ){
 				timer_start(2000);
 			 }
        else if(eTaskGetState( p_timer_handle) == eDeleted)	{
@@ -409,12 +416,12 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 						
 						case move_target :{
 							
-							if (eTaskGetState( p_timer_handle) == eInvalid){
+							if (eTaskGetState( p_timer_handle) != eRunning && eTaskGetState( p_timer_handle) != eReady && eTaskGetState( p_timer_handle) != eSuspended ){
 								timer_start(2000);
-								}
+										}
 							else if(eTaskGetState( p_timer_handle) == eDeleted)	{
 								state = CMD_GET;
-									}	 
+										}	 
 							
 							if(field_info.region_occupy[(int)pack.target.x][(int)pack.target.y].belong == player){
 									inner_state=move_Sentry;

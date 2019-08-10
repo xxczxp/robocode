@@ -275,8 +275,6 @@ int main(void)
 	auto_queue = xQueueCreate(AUTO_RECIVE_BUFFER_SIZE, sizeof(auto_pack_t));
 
 	xTaskCreate((TaskFunction_t)referee_send_task, "send_task", 256, NULL, osPriorityHigh, &referee_send_handle);
-  
-	a = eTaskGetState(referee_send_handle);
 	
 	xTaskCreate((TaskFunction_t)up_task, "send_task", 256, NULL, osPriorityHigh, &up_control_taskHandle);
 

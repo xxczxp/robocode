@@ -74,9 +74,9 @@
 
 
 //底盘电机最大速度
-#define MAX_WHEEL_SPEED 3.0f
+#define MAX_WHEEL_SPEED 2.5f
 //底盘运动过程最大前进速度
-#define NORMAL_MAX_CHASSIS_SPEED_X 2.0f
+#define NORMAL_MAX_CHASSIS_SPEED_X 1.5f
 //底盘运动过程最大平移速度
 #define NORMAL_MAX_CHASSIS_SPEED_Y 1.5f
 //底盘设置旋转速度，设置前后左右轮不同设定速度的比例分权 0为在几何中心，不需要补偿

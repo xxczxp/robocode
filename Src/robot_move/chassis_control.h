@@ -49,7 +49,8 @@ float w;
 
 typedef enum{
 	MOVE_CMD,
-	PUT_BALL_CMD
+	PUT_BALL_CMD,
+	STOP
 }AUTO_CMD;
 
 typedef struct{
@@ -62,13 +63,13 @@ typedef struct{
 
 
 extern QueueHandle_t auto_queue;
+extern void reset_queue(void);
 
 typedef enum{
 	CMD_GET,
 	MOVE,
 	PUT_BALL,
-	PUT_BALL_MOVE,
-	STOP
+	PUT_BALL_MOVE,P
 }STEP_AUTO_STATE;
 
 typedef enum{
