@@ -62,7 +62,7 @@ void up_init(void){
 	//DEBUG pid
 
 	const static fp32 ob_position_pid[3] ={2,0,10 };
-	const static fp32 pull_position_pid[3] = {1,0,0};
+	const static fp32 pull_position_pid[3] = {100,10,0};
 
 	
 	
@@ -78,7 +78,7 @@ void up_init(void){
 	
 	//DEBUG pid
 	PID_Init(&up_motor_position_pid[OB_INDEX],PID_POSITION,ob_position_pid,0.3f,0.2f);
-	PID_Init(&up_motor_position_pid[PULL_INDEX],PID_POSITION,pull_position_pid,2.0f,0.2f);
+	PID_Init(&up_motor_position_pid[PULL_INDEX],PID_POSITION,pull_position_pid,2500,2000);
 
 	
 }
@@ -148,21 +148,30 @@ void cup_put_task(void const *pvParameters){
 
 
 
+int last_3510_en=0;
 
 void up_motor_speed_update(){
 	for(int i=0;i<UP_MOTOR_NUM;i++){
 		up_motor[i].speed = up_motor_sign[i]  * up_motor[i].chassis_motor_measure->speed_rpm;
 	}
+	
+	up_motor[1].speed=(up_motor[1].chassis_motor_measure->total_ecd-last_3510_en)/UP_CONTROL_TIME_MS;
+	last_3510_en=up_motor[1].chassis_motor_measure->total_ecd;
+
+	
 
 }
 
 void up_pid_cacu(){
 	
 		float speed;
-	int i;
-	for(i=0;i<UP_MOTOR_NUM;i++)
+	
+	for(int i=0;i<UP_MOTOR_NUM;i++){
 	speed=PID_Calc(up_motor_position_pid+i, up_motor[i].chassis_motor_measure->total_ecd*up_motor_sign[i], up_target[i]);
 		PID_Calc(up_motor_speed_pid+i,up_motor[i].speed,speed);
+	}
+	
+	up_motor_speed_pid[1].out=PID_Calc(up_motor_position_pid+1, up_motor[1].chassis_motor_measure->total_ecd*up_motor_sign[1], up_target[1]);
 		
 	
 
@@ -190,7 +199,7 @@ void up_task(void const *pvParameters){
             {
                CAN_CMD_UP(up_motor_speed_pid[0].out,up_motor_speed_pid[1].out,0.0,0.0);
             }
-		vTaskDelay(CHASSIS_CONTROL_TIME_MS);
+		vTaskDelay(UP_CONTROL_TIME_MS);
 	}
 	
 	

@@ -54,6 +54,7 @@
 
 //底盘任务控制间隔 2ms
 #define CHASSIS_CONTROL_TIME_MS 1
+#define UP_CONTROL_TIME_MS 1
 //底盘任务控制间隔 0.002s
 #define CHASSIS_CONTROL_TIME 0.001f
 //底盘任务控制频率，尚未使用这个宏
