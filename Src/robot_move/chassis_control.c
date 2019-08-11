@@ -335,6 +335,12 @@ void normal_werr(float *werr){
 
 #define DIS_OUT 0.31
 
+int is_limit(float err,float limi){
+	if(fabs(err)<limi)
+		return 1;
+			else return 0;
+}
+
 void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector){
 	
 	static auto_pack_t pack;
@@ -379,6 +385,54 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 				else if(pack.cmd==PUT_BALL_CMD){
 					state=PUT_BALL;
 					inner_state=move_target;
+					if (player == BLUE){
+								target.w = special_node[3][pack.near];				
+							}
+							
+							else{
+								target.w = special_node[4][pack.near];
+							}
+							
+					if(player == 1){
+								
+								if(is_limit(special_node[3][pack.near] - PI,0.001)){
+								target.x=special_node[1][pack.near] - DIS_OUT;
+							  target.y=special_node[2][pack.near];}
+							
+								else if( is_limit(special_node[3][pack.near] - PI/2,0.001)){
+								target.x=special_node[1][pack.near];
+							  target.y=special_node[2][pack.near] - DIS_OUT;}
+								
+									else if( is_limit(special_node[3][pack.near],0.001)){
+								target.x=special_node[1][pack.near];
+							  target.y=special_node[2][pack.near] + DIS_OUT;}
+									
+									else {
+								target.x=special_node[1][pack.near] + DIS_OUT;
+							  target.y=special_node[2][pack.near] ;}	
+									
+							}
+							
+							else{
+								
+								if(is_limit(special_node[4][pack.near] - PI,0.001)){
+								target.x=special_node[1][pack.near] - DIS_OUT;
+							  target.y=special_node[2][pack.near];}
+							
+								else if( is_limit(special_node[4][pack.near] - PI/2,0.001)){
+								target.x=special_node[1][pack.near];
+							  target.y=special_node[2][pack.near] - DIS_OUT;}
+								
+									else if( is_limit(special_node[4][pack.near],0.001)){
+								target.x=special_node[1][pack.near];
+							  target.y=special_node[2][pack.near] + DIS_OUT;}
+									
+									else {
+								target.x=special_node[1][pack.near] + DIS_OUT;
+							  target.y=special_node[2][pack.near] ;}	
+								
+							}
+					
 				}
 			}
 			
@@ -425,8 +479,8 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 					switch(inner_state){
 						
 						case move_target :{
-							if(field_info.region_occupy[(int)pack.target.x][(int)pack.target.y].belong == player || timer_state_sign){
-									inner_state=move_Sentry;
+							if(((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz-target.w)<WZ_PASS_LIMIT)) || timer_state_sign){
+									inner_state=release;
 									*vx_set=0;
 									*vy_set = 0;
 									*wz_set = 0;		
@@ -434,42 +488,11 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 							
 						else{
 							
-//							float werr;
-//								xerr,yerr;
-					
-//							xerr=pack.target.x-distance_x;
-//							yerr=pack.target.y-distance_y;
-//					
-//							float dis=sqrt(xerr*xerr+yerr*yerr);
-//							float right_degree  = (float)acos(xerr/dis);
-//							if(asin(yerr/dis)<0)
-//							right_degree=2*Pi-right_degree;
-//					
-//							pack.target.w=right_degree;
-//							werr=pack.target.w-distance_wz;
-//					
-							if (player == BLUE){
-								target.w = special_node[3][pack.near];				
-							}
-							
-							else{
-								target.w = special_node[4][pack.near];
-							}
-							
 							float werr;
 
 				werr=pack.target.w-distance_wz;
 					normal_werr(&werr);
-				current.w=pack.target.w+werr;
-
-//							while(werr>Pi){
-//								werr-=2*Pi;
-//							}
-//							while(werr<-Pi){
-//								werr+=2*Pi;
-//							}
-//							current.w=pack.target.w+werr;
-					
+				current.w=pack.target.w+werr;					
 							PID_Calc_L(&auto_x, &auto_y, &pack.target, &current);
 							*vx_set =result[0];
 							*vy_set =result[1];
@@ -479,84 +502,33 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 				}break;
 						
 				
-				    case move_Sentry:{
-							if((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz-target.w)<WZ_PASS_LIMIT)){
-								inner_state=release;
-								*vx_set=0;
-								*vy_set = 0;
-								*wz_set = 0;
-								}
-							
-							else{
-								
-							float werr;
-              
-							if(player == 1){
-								
-								if(special_node[3][pack.near] == PI){
-								xerr=special_node[1][pack.near]-distance_x - DIS_OUT;
-							  yerr=special_node[2][pack.near]-distance_y;}
-							
-								else if( special_node[3][pack.near] == PI/2){
-								xerr=special_node[1][pack.near]-distance_x;
-							  yerr=special_node[2][pack.near]-distance_y - DIS_OUT;}
-								
-									else if( special_node[3][pack.near] == 0){
-								xerr=special_node[1][pack.near]-distance_x;
-							  yerr=special_node[2][pack.near]-distance_y + DIS_OUT;}
-									
-									else {
-								xerr=special_node[1][pack.near]-distance_x + DIS_OUT;
-							  yerr=special_node[2][pack.near]-distance_y ;}	
-									
-							}
-							
-							else{
-								
-								if(special_node[4][pack.near] == PI){
-									xerr=special_node[1][pack.near]-distance_x - 0.31;
-									yerr=special_node[2][pack.near]-distance_y;}
-							
-								else if( special_node[4][pack.near] == PI/2){
-									xerr=special_node[1][pack.near]-distance_x;
-									yerr=special_node[2][pack.near]-distance_y - 0.31;}
-								
-								else if( special_node[4][pack.near] == 0){
-									xerr=special_node[1][pack.near]-distance_x;
-									yerr=special_node[2][pack.near]-distance_y + 0.31;}
-									
-								else {
-									xerr=special_node[1][pack.near]-distance_x + 0.31;
-									yerr=special_node[2][pack.near]-distance_y ;}
-								
-							}
-							if (W_C == 1){
-								float dis=sqrt(xerr*xerr+yerr*yerr);
-								float right_degree  = (float)acos(xerr/dis);
-								if(asin(yerr/dis)<0)
-								right_degree=2*Pi-right_degree;
-				
-								target.w=right_degree;
-				
-								werr=pack.target.w-distance_wz;
-							
-								while(werr>Pi){
-									werr-=2*Pi;
-									}
-							
-									while(werr<-Pi){
-									werr+=2*Pi;
-								}
-							
-								//current.w=pack.target.w+werr;
-						   }
-							PID_Calc_L(&auto_x, &auto_y, &target, &current);
-							*vx_set =result[0];
-							*vy_set =result[1];
-							*wz_set=PID_Calc(&auto_wz,current.w,target.w);
-								}
-							
-						}break;
+//				    case move_Sentry:{
+//							if((fabs(distance_x-target.x)<X_PASS_LIMIT)&&(fabs(distance_y-target.y)<Y_PASS_LIMIT) && (fabs(distance_wz-target.w)<WZ_PASS_LIMIT)){
+//								inner_state=release;
+//								*vx_set=0;
+//								*vy_set = 0;
+//								*wz_set = 0;
+//								}
+//							
+//							else{
+//								
+//							float werr;
+//              
+//							
+//							
+//							werr=pack.target.w-distance_wz;
+//					normal_werr(&werr);
+//				current.w=pack.target.w+werr;
+//							
+//						
+//						   
+//							PID_Calc_L(&auto_x, &auto_y, &target, &current);
+//							*vx_set =result[0];
+//							*vy_set =result[1];
+//							*wz_set=PID_Calc(&auto_wz,current.w,target.w);
+//								}
+//							
+//						}break;
 						
 						
 						case release:{
