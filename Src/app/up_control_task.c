@@ -50,6 +50,7 @@ void up_init(void){
 
 	
 	const static fp32 motor_speed_pid[3] = {M3505_MOTOR_SPEED_PID_KP, M3505_MOTOR_SPEED_PID_KI, M3505_MOTOR_SPEED_PID_KD};
+	const static fp32 roll_motor_speed_pid[3] = {M3505_MOTOR_SPEED_PID_KP, M3505_MOTOR_SPEED_PID_KI, M3505_MOTOR_SPEED_PID_KD};
 	
 	//DEBUG pid
 
@@ -65,6 +66,8 @@ void up_init(void){
 		up_motor[i].chassis_motor_measure=&motor_measure_ptr[i];
 		motor_mearsure_bias[i]=up_motor[i].chassis_motor_measure->total_ecd;
 	}
+	
+	PID_Init(&up_motor_speed_pid[1],PID_POSITION,roll_motor_speed_pid,M3510_MOTOR_SPEED_PID_MAX_OUT,M3510_MOTOR_SPEED_PID_MAX_IOUT);
 	
 	//DEBUG pid
 	PID_Init(&up_motor_position_pid[OB_INDEX],PID_POSITION,ob_position_pid,0.3f,0.2f);
