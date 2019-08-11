@@ -13,6 +13,9 @@
 #define OB_INDEX 0
 #define PULL_INDEX 1
 #define UP_MOTOR_NUM 3
+
+#define GET_CUP_EN 0xCF
+#define PUT_CUP_EN 0xC60
 //#define PI 3.1415926
 
 PidTypeDef up_motor_speed_pid[UP_MOTOR_NUM]={PID_POSITION,M3505_MOTOR_SPEED_PID_KP, M3505_MOTOR_SPEED_PID_KI, M3505_MOTOR_SPEED_PID_KD};
@@ -34,17 +37,20 @@ float up_motor_sign[UP_MOTOR_NUM];
 extern auto_pack_t next_cmd;
 
 steering_engine ball_serve;
-steering_engine cup_serve;
-steering_engine free_serve;
-
+steering_engine cup_freer;
+steering_engine ball_puter;
+steering_engine clip_freer;
+steering_engine position_controler;
 void up_init(void){
 	
-	up_motor_sign[0]=1;
+	up_motor_sign[0]=1*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN;
 	up_motor_sign[1]=1;
 	up_motor_sign[2]=1;
 	ball_serve.port = A;
-	free_serve.port = B;
-	cup_serve.port = C;
+  cup_freer.port = B;
+  ball_puter.port = C;
+  clip_freer.port = D;
+  position_controler.port = E;
 	motor_measure_ptr=get_Yaw_Gimbal_Motor_Measure_Point();
 
 	
@@ -102,45 +108,57 @@ void un_timer_task(void const *pvParameters){
 	vTaskDelete(NULL);
 }
 	
+
+void up_s_task(void const *pvParameters){
+change_pwm(&position_controler,90);
+vTaskDelete(NULL);
+}
+
+xTaskHandle cup_put;
+float a;
+float b;
+float c;
+float d;
+float e;
+float f;
+float g;
 	
-void cup_out_task(void const *pvParameters){
-	int i = 0;
-	while(i < next_cmd.cup_num){
-	change_pwm(&cup_serve,45);
-	vTaskDelay(100);
-	change_pwm(&cup_serve,180);
-	vTaskDelay(100);
-	change_pwm(&cup_serve, 90);
-	i++;
-	}
+void cup_prepare_task(void const *pvParameters){
+change_pwm(&position_controler,a);
+	change_pwm(&cup_freer, b);
+	vTaskDelay(f);
+	change_pwm(&cup_freer, c);
+	change_pwm(&ball_puter,d);
+	vTaskDelay(g);
+	change_pwm(&ball_puter,e);
+	vTaskDelete(NULL);
+}
+	
+void cup_put_task(void const *pvParameters){
+	xTaskCreate((TaskFunction_t)up_s_task, "steering engine up", 128, NULL, 1, cup_put);
+	up_target[1] = PI/2;
+	change_pwm(&clip_freer, 40);
 	vTaskDelete(NULL);
 }
 
-void free_ball_task(void const *pvParameters){
-	int i = 0;
-	while(i < next_cmd.cup_num){
-	change_pwm(&free_serve, 45);
-	vTaskDelay(100);
-	change_pwm(&cup_serve,90);
-	i++;
-	}
-	vTaskDelete(NULL);
-}
+
 
 
 void up_motor_speed_update(){
 	for(int i=0;i<UP_MOTOR_NUM;i++){
-		up_motor[i].speed = up_motor_sign[i] * CHASSIS_MOTOR_RPM_TO_VECTOR_SEN * up_motor[i].chassis_motor_measure->speed_rpm;
+		up_motor[i].speed = up_motor_sign[i]  * up_motor[i].chassis_motor_measure->speed_rpm;
 	}
 
 }
 
 void up_pid_cacu(){
-	for(int i=0;i<UP_MOTOR_NUM;i++){
-		float speed=PID_Calc(up_motor_position_pid+i, up_motor[i].chassis_motor_measure->total_ecd*up_motor_sign[i]*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN, up_target[i]);
+	
+		float speed=PID_Calc(up_motor_position_pid, up_motor[0].chassis_motor_measure->total_ecd*up_motor_sign[0]*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN, up_target[0]);
+	
+	for(int i=0;i<UP_MOTOR_NUM;i++)
 		PID_Calc(up_motor_speed_pid+i,up_motor[i].speed,speed);
 		
-	}
+	
 
 }
 void trans_ball_task(void const *pvParameters){
