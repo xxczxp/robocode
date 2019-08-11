@@ -69,10 +69,15 @@ static void chassis_set_contorl(chassis_move_t *chassis_move_control);
 //底盘PID计算以及运动分解
 static void chassis_control_loop(chassis_move_t *chassis_move_control_loop);
 
+int last_big=0,now_big=0;
+extern float up_target[3];
+
 
 //主任务
 void chassis_task(void const *pvParameters)
 {
+		now_big=chassis_move.chassis_RC->rc.ch[4]>330;
+	
     //空闲一段时间
     vTaskDelay(CHASSIS_TASK_INIT_TIME);
     //底盘初始化
@@ -108,6 +113,9 @@ void chassis_task(void const *pvParameters)
                 CAN_CMD_CHASSIS(chassis_move.motor_chassis[0].give_current, chassis_move.motor_chassis[1].give_current,
                                 chassis_move.motor_chassis[2].give_current, chassis_move.motor_chassis[3].give_current);
             }
+						if(now_big==1&&last_big==0){
+								up_target[0]+=PI;
+						}
 						if(chassis_move.chassis_RC->rc.s[1] == 3){
 							reset_queue();
 						}
@@ -120,7 +128,7 @@ void chassis_task(void const *pvParameters)
 							cup_free_task(&asd);
 							}
 						}
-						
+						last_big=now_big;
         }
         //系统延时
         vTaskDelay(CHASSIS_CONTROL_TIME_MS);
