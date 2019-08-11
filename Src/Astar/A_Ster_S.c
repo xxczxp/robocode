@@ -378,7 +378,7 @@ void take_a_step(node_t c_n){
 			pack.cup_num = cup_num;
 			pack.ball_num  = ball_num;
 			}
-			xQueueReceive(auto_queue,&pack,5);
+			xQueueSend(auto_queue,&pack,5);
 		}
 	
 		else if(current_node.spr == 1 && time<5){
@@ -389,7 +389,7 @@ void take_a_step(node_t c_n){
 			pack.target.x = last_node.loc[0];
 			pack.target.y = last_node.loc[1];
 			pack.target.w = 0;
-			xQueueReceive(auto_queue,&pack,5);
+			xQueueSend(auto_queue,&pack,5);
 	}
 		else if(current_node.spr != 1 && time>3){
 			auto_pack_t pack;
@@ -399,7 +399,7 @@ void take_a_step(node_t c_n){
 			pack.target.x = current_node.loc[0];
 			pack.target.y = current_node.loc[1];
 			pack.target.w = 0;
-			xQueueReceive(auto_queue,&pack,5);
+			xQueueSend(auto_queue,&pack,5);
 	 }
 		else{
 			auto_pack_t pack;
@@ -409,7 +409,7 @@ void take_a_step(node_t c_n){
 			pack.target.x = last_node.loc[0];
 			pack.target.y = last_node.loc[1];
 			pack.target.w = 0;
-			xQueueReceive(auto_queue,&pack,5);
+			xQueueSend(auto_queue,&pack,5);
 		}
 }
 	else{
@@ -434,7 +434,7 @@ void take_a_step(node_t c_n){
 			pack.ball_num = ball_num;
 			}
 						
-			xQueueReceive(auto_queue,&pack,5);
+			xQueueSend(auto_queue,&pack,5);
 			}
 		else if(current_node.spr == 1 && time<5){
 			auto_pack_t pack;
@@ -444,7 +444,7 @@ void take_a_step(node_t c_n){
 			pack.target.x = last_node.loc[0];
 			pack.target.y = last_node.loc[1];
 			pack.target.w = 0;
-			xQueueReceive(auto_queue,&pack,5);
+			xQueueSend(auto_queue,&pack,5);
 			}
 		else if(current_node.spr != 1 && time>3){
 			auto_pack_t pack;
@@ -454,7 +454,7 @@ void take_a_step(node_t c_n){
 			pack.target.x = current_node.loc[0];
 			pack.target.y = current_node.loc[1];
 			pack.target.w = 0;
-			xQueueReceive(auto_queue,&pack,5);
+			xQueueSend(auto_queue,&pack,5);
 	}
 		else{
 			auto_pack_t pack;
@@ -464,7 +464,7 @@ void take_a_step(node_t c_n){
 			pack.target.x = last_node.loc[0];
 			pack.target.y = last_node.loc[1];
 			pack.target.w = 0;
-			xQueueReceive(auto_queue,&pack,5);
+			xQueueSend(auto_queue,&pack,5);
 		}
 	}
 }
@@ -498,7 +498,7 @@ void A_star(){
 	else{
 		auto_pack_t pack;
 		pack.cmd = STOP;
-		xQueueReceive(auto_queue,&pack,5);
+		xQueueSend(auto_queue,&pack,5);
 	}
 }
 

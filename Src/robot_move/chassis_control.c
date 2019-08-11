@@ -230,8 +230,8 @@ void chassis_distance_send_task(void const * argument)
 
     while(1)
     {
-//        uint8_t send_len;
-        //send_len = chassis_odom_pack_solve( distance_x, distance_y, distance_wz, chassis_move.vx, chassis_move.vy, chassis_move.wz, chassis_move.chassis_gyro_z, chassis_move.chassis_yaw);
+        uint8_t send_len;
+        send_len = chassis_odom_pack_solve( distance_x, distance_y, distance_wz, chassis_move.vx, chassis_move.vy, chassis_move.wz, chassis_move.chassis_gyro_z, chassis_move.chassis_yaw);
         osDelay(10);
     }
 
@@ -262,33 +262,9 @@ void chassis_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move
     }
 
 
-	current.x = distance_x;
-	current.y = distance_y;
-	current.w = 0;
-	
-		
-		double dis=sqrt(distance_x*distance_x+distance_y*distance_y);
-		double b=distance_x/dis;
-	  double right_degree  = acos(distance_x/dis);
-		if(asin(distance_y/dis)<0)
-			right_degree=2*Pi-right_degree;
-		
-		target.x=3;
-		
-		
-	double adjustment_dis_degee =distance_wz;
-		
-
-	double delta_degree = right_degree-adjustment_dis_degee;
-		while(delta_degree>PI)
-			delta_degree-=2*Pi;
-		while(delta_degree<-Pi)
-			delta_degree+=2*Pi;
-		
-	PID_Calc_L(&auto_x, &auto_y, &target, &current);
-	*vx_set = 0.5*PID_Calc(&auto_x,dis,target.x);
-	*vy_set = 0.6;
-	*wz_set = PID_Calc(&auto_wz, distance_wz,distance_wz+delta_degree);
+	*vx_set=ch_auto_control_data.vx;
+		*vy_set=ch_auto_control_data.vy;
+		*wz_set=ch_auto_control_data.vw;
 	
 		// step_auto_control(vx_set, vy_set, wz_set, chassis_move_rc_to_vector);
 	
