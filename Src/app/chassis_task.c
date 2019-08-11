@@ -18,6 +18,8 @@
 
 #include "remote_control.h"
 
+#include "up_control_task.h"
+
 #include "cmsis_os.h"
 
 #include "arm_math.h"
@@ -45,6 +47,8 @@
 
 
 extern chassis_move_t chassis_move;
+		
+extern void steer_open(void);
 
 extern void chassis_motor_speed_update(chassis_move_t *chassis_move_update);
 extern void chassis_vector_to_mecanum_wheel_speed(const fp32 vx_set, const fp32 vy_set, const fp32 wz_set, fp32 wheel_speed[4]);
@@ -65,10 +69,15 @@ static void chassis_set_contorl(chassis_move_t *chassis_move_control);
 //底盘PID计算以及运动分解
 static void chassis_control_loop(chassis_move_t *chassis_move_control_loop);
 
+int last_big=0,now_big=0;
+extern float up_target[3];
+
 
 //主任务
 void chassis_task(void const *pvParameters)
 {
+		now_big=chassis_move.chassis_RC->rc.ch[4]>330;
+	
     //空闲一段时间
     vTaskDelay(CHASSIS_TASK_INIT_TIME);
     //底盘初始化
@@ -104,9 +113,22 @@ void chassis_task(void const *pvParameters)
                 CAN_CMD_CHASSIS(chassis_move.motor_chassis[0].give_current, chassis_move.motor_chassis[1].give_current,
                                 chassis_move.motor_chassis[2].give_current, chassis_move.motor_chassis[3].give_current);
             }
+						if(now_big==1&&last_big==0){
+								up_target[0]+=PI;
+						}
 						if(chassis_move.chassis_RC->rc.s[1] == 3){
 							reset_queue();
 						}
+						else if (chassis_move.chassis_RC->rc.s[1] == 1){
+							OPCL_task(NULL);
+						}
+						else if  (chassis_move.chassis_RC->rc.s[1] == 2){
+							int asd = 1;
+							while(1){ 
+							cup_free_task(&asd);
+							}
+						}
+						last_big=now_big;
         }
         //系统延时
         vTaskDelay(CHASSIS_CONTROL_TIME_MS);

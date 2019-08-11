@@ -26,6 +26,7 @@
 #define Pi acos(-1)
 
 extern int player;
+extern int cup_free;
 
 PidTypeDef auto_x = {0, 0.5, 7e-10, 0.0005, 1, 1};
 PidTypeDef auto_y = {0, 0.0f, 0.0f, 0.0f, 1, 1};
@@ -317,6 +318,8 @@ int is_limit(float err,float limi){
 			else return 0;
 }
 
+
+
 void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector){
 	
 	static auto_pack_t pack;
@@ -329,7 +332,10 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 	
 	//xTaskHandle C_O_T;
   xTaskHandle T_B_T;
+  xTaskHandle P_C_T;
 	xTaskHandle O_C_T;
+	xTaskHandle P_B_T;
+	xTaskHandle C_F_T;
 //	xTaskHandle C_T_C;
 //	xTaskHandle U_T_C;
 	
@@ -348,12 +354,14 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 				cacu_w(target,current);
 				
 				
-				if(next_cmd.cmd == PUT_BALL_CMD)
+				if(next_cmd.cmd == PUT_BALL_CMD && is_create != 1)
 				{
+					int num = next_cmd.ball_num;
+					xTaskCreate((TaskFunction_t)cup_prepare_task, "prepare cup", 512, (void*)&num,  1, &P_C_T);
 					//xTaskCreate((TaskFunction_t)cup_out_task,"cup_out_task" , 512, &ucParameterToPass, 1, &C_O_T);	
 						xTaskCreate((TaskFunction_t)trans_ball_task, "trans_ball_task", 512, &ucParameterToPass, 1, &T_B_T);
-						
-				}
+					  is_create = 1;
+						}
 				if(pack.cmd==MOVE_CMD){
 					state=MOVE;
 				}
@@ -369,7 +377,7 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 								target.w = special_node[4][pack.near];
 							}
 							
-					if(player == 1){
+					if(player == BLUE){
 								
 								if(is_limit(special_node[3][pack.near] - PI,0.001)){
 								target.x=special_node[1][pack.near] - DIS_OUT;
@@ -510,16 +518,17 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 						case release:{
 						 if(task_finish == 0){
 							xTaskCreate((TaskFunction_t)OPCL_task, "open close clip", 128, NULL, 1, O_C_T);
+							 xTaskCreate((TaskFunction_t)cup_put_task, "put cup", 512, NULL, 1, P_B_T);
+							 xTaskCreate((TaskFunction_t)cup_free_task, "cup action", 512, NULL, 1, C_F_T);
 						 }
-						 else if(task_finish == 1){
+						 else if(task_finish == 1 && cup_free == 1){
 						   inner_state=move_target;
-							 			state = CMD_GET;
+							 	state = CMD_GET;
 						 }
-						 else{
-								;
-						 }
+						
 				 }break;
 			}
+			is_create = 0;
 		}break;
 	}
 }

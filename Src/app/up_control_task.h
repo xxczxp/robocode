@@ -5,12 +5,16 @@
 extern void OPCL_task(void const *pvParameters);
 extern void cup_out_task(void const *pvParameters);
 extern void free_ball_task(void const *pvParameters);
-extern void trans_ball_task(void const *pvParameters);
+extern void trans_ball_task(int* num);
 extern void Timer_task(void const *pvParameters);
 extern void un_timer_task(void const *pvParameters);
 extern void timer_delay_task(void const *pvParameters);
 extern void timer_start(int time);
 extern int timer_is_finish(void);
+extern void cup_prepare_task(void const *pvParameters);
+extern void cup_put_task(void const *pvParameters);
+extern void cup_free_task(int* num);
+
 
 #ifndef UP_CONTROL_H
 #define UP_CONTROL_H
