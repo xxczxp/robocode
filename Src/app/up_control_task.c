@@ -11,6 +11,7 @@
 
 
 #define CHASSIS_MOTOR_RPM_TO_VECTOR_SEN 2.13081e-5
+#define ARG_3510 1
 #define OB_INDEX 0
 #define PULL_INDEX 1
 #define UP_MOTOR_NUM 3
@@ -45,7 +46,7 @@ steering_engine position_controler;
 void up_init(void){
 	
 	up_motor_sign[0]=1*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN;
-	up_motor_sign[1]=1;
+	up_motor_sign[1]=1*ARG_3510;
 	up_motor_sign[2]=1;
 	ball_serve.port = A;
   cup_freer.port = B;
@@ -157,9 +158,10 @@ void up_motor_speed_update(){
 
 void up_pid_cacu(){
 	
-		float speed=PID_Calc(up_motor_position_pid, up_motor[0].chassis_motor_measure->total_ecd*up_motor_sign[0]*CHASSIS_MOTOR_RPM_TO_VECTOR_SEN, up_target[0]);
-	
-	for(int i=0;i<UP_MOTOR_NUM;i++)
+		float speed;
+	int i;
+	for(i=0;i<UP_MOTOR_NUM;i++)
+	speed=PID_Calc(up_motor_position_pid+i, up_motor[i].chassis_motor_measure->total_ecd*up_motor_sign[i], up_target[i]);
 		PID_Calc(up_motor_speed_pid+i,up_motor[i].speed,speed);
 		
 	
