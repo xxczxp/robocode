@@ -18,6 +18,8 @@
 
 #include "remote_control.h"
 
+#include "up_control_task.h"
+
 #include "cmsis_os.h"
 
 #include "arm_math.h"
@@ -45,6 +47,8 @@
 
 
 extern chassis_move_t chassis_move;
+		
+extern void steer_open(void);
 
 extern void chassis_motor_speed_update(chassis_move_t *chassis_move_update);
 extern void chassis_vector_to_mecanum_wheel_speed(const fp32 vx_set, const fp32 vy_set, const fp32 wz_set, fp32 wheel_speed[4]);
@@ -107,6 +111,16 @@ void chassis_task(void const *pvParameters)
 						if(chassis_move.chassis_RC->rc.s[1] == 3){
 							reset_queue();
 						}
+						else if (chassis_move.chassis_RC->rc.s[1] == 1){
+							OPCL_task(NULL);
+						}
+						else if  (chassis_move.chassis_RC->rc.s[1] == 2){
+							int asd = 1;
+							while(1){ 
+							cup_free_task(&asd);
+							}
+						}
+						
         }
         //œµÕ≥—” ±
         vTaskDelay(CHASSIS_CONTROL_TIME_MS);
