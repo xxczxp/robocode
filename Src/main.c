@@ -239,18 +239,18 @@ int main(void)
     power_ctrl_on(3);
     HAL_Delay(137);
 
-//	steering_engine asd;
-//		steering_engine qwe;
-//	  steering_engine mnb;
-//		asd.port = B;
-//		qwe.port = A;
-//		mnb.port = C;
-//		pwm_all_init();
-//		while(1){
-//		change_pwm(&asd, ggg);
-//			change_pwm(&qwe, poi);
-//			change_pwm(&mnb,zxc);
-//		}
+	steering_engine asd;
+		steering_engine qwe;
+	  steering_engine mnb;
+		asd.port = B;
+		qwe.port = A;
+		mnb.port = C;
+		pwm_all_init();
+		while(1){
+		change_pwm(&asd, ggg);
+			change_pwm(&qwe, poi);
+			change_pwm(&mnb,zxc);
+		}
   /* USER CODE END 1 */
 
   /* USER CODE END 2 */

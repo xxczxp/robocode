@@ -27,6 +27,7 @@ float motor_mearsure_bias[UP_MOTOR_NUM];
 
 int LGBT = 0;
 int task_finish = 0;
+int cup_free = 0;
 
 const motor_measure_t *motor_measure_ptr;
 
@@ -115,37 +116,44 @@ void un_timer_task(void const *pvParameters){
 	
 
 void up_s_task(void const *pvParameters){
-change_pwm(&position_controler,90);
+change_pwm(&position_controler,130);
 vTaskDelete(NULL);
 }
 
 xTaskHandle cup_put;
-float a;
-float b;
-float c;
-float d;
-float e;
-float f;
-float g;
-	
+xTaskHandle prepare_cup;
+xTaskHandle free_cup;
+
 void cup_prepare_task(void const *pvParameters){
-change_pwm(&position_controler,a);
-	change_pwm(&cup_freer, b);
-	vTaskDelay(f);
-	change_pwm(&cup_freer, c);
-	change_pwm(&ball_puter,d);
-	vTaskDelay(g);
-	change_pwm(&ball_puter,e);
+  up_target[1] = PI;
+	change_pwm(&position_controler,80);
+	vTaskDelay(300);
+	change_pwm(&cup_freer,0);
+	vTaskDelay(1200);
+	change_pwm(&cup_freer,90);
+	change_pwm(&clip_freer, 55);
+	change_pwm(&ball_puter,0);
+	vTaskDelay(500);
+	change_pwm(&ball_puter, 65);
 	vTaskDelete(NULL);
 }
 	
 void cup_put_task(void const *pvParameters){
 	xTaskCreate((TaskFunction_t)up_s_task, "steering engine up", 128, NULL, 1, cup_put);
 	up_target[1] = PI/2;
-	change_pwm(&clip_freer, 40);
+	change_pwm(&clip_freer, 120);
 	vTaskDelete(NULL);
 }
 
+void cup_free_task(int* num){
+	while(num>0){
+xTaskCreate((TaskFunction_t)cup_prepare_task, "cup prepare", 128, NULL, 1 ,prepare_cup);
+xTaskCreate((TaskFunction_t)cup_put_task, "cup  free", 128, NULL, 1, free_cup);
+num--;
+	}
+	cup_free = 1;
+	vTaskDelete(NULL);
+}
 
 
 int last_3510_en=0;
@@ -176,9 +184,12 @@ void up_pid_cacu(){
 	
 
 }
-void trans_ball_task(void const *pvParameters){
-  up_target[0] += next_cmd.ball_num * PI /2;
-	
+void trans_ball_task(int* num){
+  while(num>0){
+	up_target[0] += next_cmd.ball_num * PI /2;
+	num--;
+	}
+	vTaskDelete(NULL);
 }
 
  
