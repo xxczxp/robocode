@@ -51,29 +51,29 @@ void change_pwm(steering_engine *item, float degree){
 		
 		case D : 	__HAL_TIM_SetCompare(&htim5, TIM_CHANNEL_1, degree); break;
 		
-		case E : 	__HAL_TIM_SetCompare(&htim5, TIM_CHANNEL_4, degree); break;
+		case E : 	__HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_4, degree); break;
 		
-		case F : 	__HAL_TIM_SetCompare(&htim5, TIM_CHANNEL_3, degree); break;
+		case F : 	__HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_3, degree); break;
 		
-		case G : 	__HAL_TIM_SetCompare(&htim5, TIM_CHANNEL_2, degree); break;
+		case G : 	__HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_2, degree); break;
 		
-		case H : 	__HAL_TIM_SetCompare(&htim5, TIM_CHANNEL_1, degree); break;
+		case H : 	__HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_1, degree); break;
 		
-		case S : 	__HAL_TIM_SetCompare(&htim5, TIM_CHANNEL_1, degree); break;
+		case S : 	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_1, degree); break;
 		
-		case T : 	__HAL_TIM_SetCompare(&htim5, TIM_CHANNEL_2, degree); break;
+		case T : 	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_2, degree); break;
 	
-		case U : 	__HAL_TIM_SetCompare(&htim5, TIM_CHANNEL_3, degree); break;
+		case U : 	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_3, degree); break;
 		
-		case V : 	__HAL_TIM_SetCompare(&htim5, TIM_CHANNEL_4, degree); break;
+		case V : 	__HAL_TIM_SetCompare(&htim2, TIM_CHANNEL_4, degree); break;
 		
-		case W : 	__HAL_TIM_SetCompare(&htim5, TIM_CHANNEL_1, degree); break;
+		case W : 	__HAL_TIM_SetCompare(&htim8, TIM_CHANNEL_1, degree); break;
 		
-		case X : 	__HAL_TIM_SetCompare(&htim5, TIM_CHANNEL_2, degree); break;
+		case X : 	__HAL_TIM_SetCompare(&htim8, TIM_CHANNEL_2, degree); break;
 		
-		case Y : 	__HAL_TIM_SetCompare(&htim5, TIM_CHANNEL_3, degree); break;
+		case Y : 	__HAL_TIM_SetCompare(&htim8, TIM_CHANNEL_3, degree); break;
 		
-		case Z : 	__HAL_TIM_SetCompare(&htim5, TIM_CHANNEL_4, degree); break;
+		case Z : 	__HAL_TIM_SetCompare(&htim8, TIM_CHANNEL_4, degree); break;
 	
 		default:   ;
 	
