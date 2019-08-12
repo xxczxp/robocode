@@ -71,7 +71,7 @@ static void chassis_control_loop(chassis_move_t *chassis_move_control_loop);
 
 int last_big=0,now_big=0;
 extern float up_target[3];
-xTaskHandle G_G_G;
+xTaskHandle G_G_G,P_P_P;
 int row[2];
 
 //Ö÷ÈÎÎñ
@@ -121,23 +121,23 @@ void chassis_task(void const *pvParameters)
 						if(now_big==1&&last_big==0){
 								up_target[0]+=PI;
 						}
-						if (row[1] == row[0]){return;}
-						else{
+						
+						
 						if (chassis_move.chassis_RC->rc.s[1] != 2&&G_G_G != NULL){
-						vTaskDelete(NULL);
+						vTaskDelete(G_G_G);
 						}
-						if(chassis_move.chassis_RC->rc.s[1] == 3){
+						if(chassis_move.chassis_RC->rc.s[1] == 3&&row[1]!=3){
 							reset_queue();
 						}
-						else if (chassis_move.chassis_RC->rc.s[1] == 1){
-							OPCL_task(NULL);
+						if (chassis_move.chassis_RC->rc.s[1] == 1&&row[1]!=1){
+							xTaskCreate((TaskFunction_t)OPCL_task,"opcl task",128,NULL,2,P_P_P);
 						}
-						else if  (chassis_move.chassis_RC->rc.s[1] == 2 ){
+						else if  (chassis_move.chassis_RC->rc.s[1] == 2&&row[1]!=2 ){
 							int asd = 1000;
-							xTaskCreate((TaskFunction_t)cup_free_task,"free task", 512, &asd, 1, G_G_G);
+							xTaskCreate((TaskFunction_t)cup_free_task,"free task", 128, &asd, 2, G_G_G);
 							
 						}
-						}
+						
 						last_big=now_big;
 						
         }
