@@ -84,10 +84,10 @@ void chassis_task(void const *pvParameters)
     //底盘初始化
     chassis_init(&chassis_move);
     //判断底盘电机是否都在线
-    while (toe_is_error(ChassisMotor1TOE) || toe_is_error(ChassisMotor2TOE) || toe_is_error(ChassisMotor3TOE) || toe_is_error(ChassisMotor4TOE) || toe_is_error(DBUSTOE))
-    {
-        vTaskDelay(CHASSIS_CONTROL_TIME_MS);
-    }
+//    while (toe_is_error(ChassisMotor1TOE) || toe_is_error(ChassisMotor2TOE) || toe_is_error(ChassisMotor3TOE) || toe_is_error(ChassisMotor4TOE) || toe_is_error(DBUSTOE))
+//    {
+//        vTaskDelay(CHASSIS_CONTROL_TIME_MS);
+//    }
 
     while (1)
     {
@@ -106,8 +106,8 @@ void chassis_task(void const *pvParameters)
 			 row[1] = row[0];
 				row[0] = chassis_move.chassis_RC->rc.s[1];
 			
-        if (!(toe_is_error(ChassisMotor1TOE) || toe_is_error(ChassisMotor2TOE) || toe_is_error(ChassisMotor3TOE) || toe_is_error(ChassisMotor4TOE)))
-        {
+//        if (!(toe_is_error(ChassisMotor1TOE) || toe_is_error(ChassisMotor2TOE) || toe_is_error(ChassisMotor3TOE) || toe_is_error(ChassisMotor4TOE)))
+//        {
             //当遥控器掉线的时候，为relax状态，底盘电机指令为零，为了保证一定发送为零，故而不采用设置give_current的方法
             if (toe_is_error(DBUSTOE))
             {
@@ -130,17 +130,17 @@ void chassis_task(void const *pvParameters)
 							reset_queue();
 						}
 						if (chassis_move.chassis_RC->rc.s[1] == 1&&row[1]!=1){
-							xTaskCreate((TaskFunction_t)OPCL_task,"opcl task",128,NULL,2,P_P_P);
+							xTaskCreate((TaskFunction_t)OPCL_task,"opcl task",128,NULL,2,&P_P_P);
 						}
 						else if  (chassis_move.chassis_RC->rc.s[1] == 2&&row[1]!=2 ){
 							int asd = 1000;
-							xTaskCreate((TaskFunction_t)cup_free_task,"free task", 128, &asd, 2, G_G_G);
+							xTaskCreate((TaskFunction_t)cup_free_task,"free task", 128, &asd, 2, &G_G_G);
 							
 						}
 						
 						last_big=now_big;
 						
-        }
+        //}
         //系统延时
         vTaskDelay(CHASSIS_CONTROL_TIME_MS);
 
