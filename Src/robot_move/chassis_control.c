@@ -519,7 +519,7 @@ void step_auto_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t 
 						 if(task_finish == 0){
 							xTaskCreate((TaskFunction_t)OPCL_task, "open close clip", 128, NULL, 1, O_C_T);
 							 xTaskCreate((TaskFunction_t)cup_put_task, "put cup", 512, NULL, 1, P_B_T);
-							 xTaskCreate((TaskFunction_t)cup_free_task, "cup action", 512, NULL, 1, C_F_T);
+							 xTaskCreate(cup_free_task, "cup action", 512, NULL, 1, C_F_T);
 						 }
 						 else if(task_finish == 1 && cup_free == 1){
 						   inner_state=move_target;

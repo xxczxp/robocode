@@ -71,7 +71,8 @@ static void chassis_control_loop(chassis_move_t *chassis_move_control_loop);
 
 int last_big=0,now_big=0;
 extern float up_target[3];
-
+xTaskHandle G_G_G;
+int row[2];
 
 //主任务
 void chassis_task(void const *pvParameters)
@@ -90,6 +91,7 @@ void chassis_task(void const *pvParameters)
 
     while (1)
     {
+			
         //遥控器设置状态
         chassis_set_mode(&chassis_move);
         //遥控器状态切换数据保存
@@ -100,7 +102,10 @@ void chassis_task(void const *pvParameters)
         chassis_set_contorl(&chassis_move);
         //底盘控制PID计算
         chassis_control_loop(&chassis_move);
-
+				now_big = chassis_move.chassis_RC->rc.ch[4]>330;
+			 row[1] = row[0];
+				row[0] = chassis_move.chassis_RC->rc.s[1];
+			
         if (!(toe_is_error(ChassisMotor1TOE) || toe_is_error(ChassisMotor2TOE) || toe_is_error(ChassisMotor3TOE) || toe_is_error(ChassisMotor4TOE)))
         {
             //当遥控器掉线的时候，为relax状态，底盘电机指令为零，为了保证一定发送为零，故而不采用设置give_current的方法
@@ -116,19 +121,25 @@ void chassis_task(void const *pvParameters)
 						if(now_big==1&&last_big==0){
 								up_target[0]+=PI;
 						}
+						if (row[1] == row[0]){return;}
+						else{
+						if (chassis_move.chassis_RC->rc.s[1] != 2&&G_G_G != NULL){
+						vTaskDelete(NULL);
+						}
 						if(chassis_move.chassis_RC->rc.s[1] == 3){
 							reset_queue();
 						}
 						else if (chassis_move.chassis_RC->rc.s[1] == 1){
 							OPCL_task(NULL);
 						}
-						else if  (chassis_move.chassis_RC->rc.s[1] == 2){
-							int asd = 1;
-							while(1){ 
-							cup_free_task(&asd);
-							}
+						else if  (chassis_move.chassis_RC->rc.s[1] == 2 ){
+							int asd = 1000;
+							xTaskCreate((TaskFunction_t)cup_free_task,"free task", 512, &asd, 1, G_G_G);
+							
+						}
 						}
 						last_big=now_big;
+						
         }
         //系统延时
         vTaskDelay(CHASSIS_CONTROL_TIME_MS);

@@ -148,12 +148,16 @@ void cup_put_task(void const *pvParameters){
 void cup_free_task(int* num){
 	while(num>0){
 xTaskCreate((TaskFunction_t)cup_prepare_task, "cup prepare", 128, NULL, 1 ,prepare_cup);
+vTaskDelay(2500);
 xTaskCreate((TaskFunction_t)cup_put_task, "cup  free", 128, NULL, 1, free_cup);
+vTaskDelay(300);
 num--;
 	}
 	cup_free = 1;
 	vTaskDelete(NULL);
 }
+
+
 
 
 int last_3510_en=0;
